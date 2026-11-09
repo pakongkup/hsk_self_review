@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>HSK 3 Daily Review · ทบทวน HSK 3 ประจำวัน</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="HSK 3 Review">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇨🇳</text></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <span class="app-logo">🇨🇳</span>
+        <div>
+          <h1 class="app-title">HSK 3 Review</h1>
+          <p class="app-subtitle" id="headerSubtitle">《新HSK教程 3级》 ทบทวนวันละ 10-15 นาที</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <!-- Language Switcher Button -->
+        <button id="langToggleBtn" class="lang-toggle-btn" title="เปลี่ยนภาษา / Switch Language">
+          🇹🇭 ภาษาไทย
+        </button>
+        <button id="themeToggleBtn" class="icon-btn" title="สลับโหมดมืด/สว่าง">🌙</button>
+        <div class="streak-badge" id="streakBadge" title="สตรีคการเรียนต่อเนื่อง">
+          🔥 <span id="streakCount">0</span> <span id="streakUnit">วัน</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+      <!-- TAB 1: DAILY REVIEW -->
+      <section id="tabReview" class="tab-panel active">
+        <!-- Configuration View -->
+        <div id="reviewConfigView" class="view-card">
+          <div class="card-hero">
+            <span class="hero-icon">⏱️</span>
+            <h2 id="cfgTitle">ทบทวนประจำวัน 10-15 นาที</h2>
+            <p id="cfgSubtitle">ระบบดึงความจำแบบ Active Recall ผสาน Spaced Repetition ครอบคลุมคำศัพท์และประโยคสนทนาจริงจากบทเรียน</p>
+          </div>
+
+          <!-- Quick Scope Selection -->
+          <div class="form-section">
+            <label class="section-label" id="lblScope">1. เลือกบทเรียน / ขอบเขต</label>
+            <div class="chapter-scope-pills">
+              <button type="button" class="scope-pill active" data-scope="all">ทุกบท (1-18)</button>
+              <button type="button" class="scope-pill" data-scope="1-3">บทที่ 1-3</button>
+              <button type="button" class="scope-pill" data-scope="4-6">บทที่ 4-6</button>
+              <button type="button" class="scope-pill" data-scope="7-9">บทที่ 7-9</button>
+              <button type="button" class="scope-pill" data-scope="10-12">บทที่ 10-12</button>
+              <button type="button" class="scope-pill" data-scope="13-15">บทที่ 13-15</button>
+              <button type="button" class="scope-pill" data-scope="16-18">บทที่ 16-18</button>
+              <button type="button" class="scope-pill" id="customScopeBtn">เลือกเอง...</button>
+            </div>
+
+            <!-- Custom Chapter Checkboxes -->
+            <div id="customChapterSelect" class="custom-chapter-box hidden">
+              <div class="chapter-grid" id="chapterCheckboxesGrid">
+                <!-- Dynamically populated -->
+              </div>
+              <div class="chapter-actions">
+                <button type="button" class="btn-text" id="selectAllChaptersBtn">เลือกทั้งหมด</button>
+                <button type="button" class="btn-text" id="clearAllChaptersBtn">ล้างทั้งหมด</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Study Mode & Duration -->
+          <div class="form-section">
+            <label class="section-label" id="lblMaterial">2. รูปแบบเนื้อหาที่จะทบทวน</label>
+            <div class="mode-options-grid">
+              <label class="mode-card selected">
+                <input type="radio" name="sessionType" value="mixed" checked>
+                <span class="mode-title" id="modeMixedTitle">🔀 สลับคำศัพท์ & ประโยคบทสนทนา</span>
+                <span class="mode-desc" id="modeMixedDesc">แนะนำสำหรับ 10-15 นาที: ฝึกจำศัพท์พร้อมเติมคำในประโยคจริง</span>
+              </label>
+              <label class="mode-card">
+                <input type="radio" name="sessionType" value="words">
+                <span class="mode-title" id="modeWordsTitle">📝 คำศัพท์อย่างเดียว</span>
+                <span class="mode-desc" id="modeWordsDesc">เน้นจำตัวอักษรจีน พินอิน และความหมายภาษาไทย</span>
+              </label>
+              <label class="mode-card">
+                <input type="radio" name="sessionType" value="sentences">
+                <span class="mode-title" id="modeSentTitle">💬 ประโยคบทสนทนา (Cloze Fill-in)</span>
+                <span class="mode-desc" id="modeSentDesc">ฝึกไวยากรณ์ในบริบทจริง (把字句, 趋向补语, 比较句)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Duration & Card Count -->
+          <div class="form-section">
+            <label class="section-label" id="lblLength">3. ระยะเวลาเป้าหมาย</label>
+            <div class="length-pills">
+              <label class="length-pill active">
+                <input type="radio" name="sessionLength" value="15" checked>
+                <span id="len10Text">⚡ 10 นาทีแบบด่วน (~15 การ์ด)</span>
+              </label>
+              <label class="length-pill">
+                <input type="radio" name="sessionLength" value="25">
+                <span id="len15Text">🔥 15 นาทีแบบเข้มข้น (~25 การ์ด)</span>
+              </label>
+              <label class="length-pill">
+                <input type="radio" name="sessionLength" value="40">
+                <span id="lenIntenseText">🚀 ซ้อมมาราธอน (~40 การ์ด)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Weak words only toggle -->
+          <div class="form-section inline-switch">
+            <div class="switch-info">
+              <span class="switch-title" id="weakTitle">⚠️ เน้นคำที่ยังจำไม่แม่น</span>
+              <span class="switch-desc" id="weakDesc">สุ่มเฉพาะคำที่เคยตอบ "ทบทวนอีกครั้ง" หรือ "ยาก"</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="onlyWeakToggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="card-footer">
+            <button id="startSessionBtn" class="btn btn-primary btn-large btn-block">
+              🚀 เริ่มทบทวน 10-15 นาที
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Flashcard Review View -->
+        <div id="reviewActiveView" class="study-view hidden">
+          <!-- Session Header Bar -->
+          <div class="study-top-bar">
+            <button id="exitSessionBtn" class="btn-icon-subtle" title="จบการทบทวน">✕</button>
+            <div class="progress-wrap">
+              <div class="progress-info">
+                <span id="sessionProgressText">การ์ดที่ 1 / 18</span>
+                <span id="sessionTimerText" class="timer-badge">⏱️ 14:59</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div id="sessionProgressBar" class="progress-bar-fill" style="width: 5%;"></div>
+              </div>
+            </div>
+            <button id="audioSpeechBtn" class="btn-icon-audio" title="ฟังเสียงอ่าน">🔊</button>
+          </div>
+
+          <!-- Study Card Container -->
+          <div class="card-viewport">
+            <div id="flashcard" class="flashcard">
+              <!-- Front of Card -->
+              <div class="card-side card-front">
+                <div class="card-meta">
+                  <span id="cardBadgeKind" class="badge badge-word">คำศัพท์</span>
+                  <span id="cardBadgeChapter" class="badge badge-chapter">บทที่ 1</span>
+                  <button id="frontAudioBtn" class="card-audio-pill" title="ฟังเสียงอ่าน">🔊 ฟังเสียง</button>
+                </div>
+
+                <!-- Word Presentation -->
+                <div id="wordFrontContent" class="front-content">
+                  <div id="cardHanzi" class="hanzi-display">以为</div>
+                  <div class="pinyin-container">
+                    <button id="togglePinyinBtn" class="pinyin-toggle-btn">👁️ ดูพินอิน (Pinyin)</button>
+                    <div id="cardPinyin" class="pinyin-display hidden">yǐwéi</div>
+                  </div>
+                  <div class="card-tap-hint" id="tapHintWord">แตะที่การ์ดเพื่อดูคำแปลไทยและประโยคตัวอย่าง</div>
+                </div>
+
+                <!-- Sentence Presentation (Cloze) -->
+                <div id="sentenceFrontContent" class="front-content hidden">
+                  <div class="sentence-context" id="cardSentenceContext">บทสนทนาในบทที่ 1</div>
+                  <div id="cardSentenceHanzi" class="sentence-hanzi-display">
+                    我以为是同乐呢，他们看上去有点儿像。
+                  </div>
+                  <div class="cloze-box" id="cardClozeBox">
+                    <span class="cloze-hint-label" id="lblMissing">คำที่หายไป:</span>
+                    <span id="cardClozeHint" class="cloze-hint-text">นึกว่า/คิดว่า (yǐwéi)</span>
+                  </div>
+                  <div class="card-tap-hint" id="tapHintSent">แตะที่การ์ดเพื่อดูเฉลยและไวยากรณ์</div>
+                </div>
+              </div>
+
+              <!-- Back of Card -->
+              <div class="card-side card-back">
+                <div class="card-meta">
+                  <span id="backBadgeKind" class="badge badge-word">คำศัพท์</span>
+                  <span id="backBadgePos" class="badge badge-pos">v.</span>
+                  <button id="backAudioBtn" class="card-audio-pill" title="ฟังเสียงอ่าน">🔊 ฟังเสียง</button>
+                </div>
+
+                <!-- Word Details -->
+                <div id="wordBackContent" class="back-content">
+                  <div id="cardBackHanzi" class="back-hanzi">以为</div>
+                  <div id="cardBackPinyin" class="back-pinyin">yǐwéi</div>
+                  
+                  <!-- Primary Thai Meaning -->
+                  <div id="cardBackThai" class="back-thai">นึกว่า, คิดว่า (เข้าใจผิด)</div>
+                  <div id="cardBackEnglish" class="back-english">to think, believe erroneously</div>
+
+                  <div class="example-box">
+                    <div class="example-header">
+                      <span id="lblExContext">ตัวอย่างในบทเรียน (Example)</span>
+                      <button id="exampleAudioBtn" class="icon-btn-micro" title="ฟังประโยคตัวอย่าง">🔊</button>
+                    </div>
+                    <div id="cardBackExCn" class="example-cn">我还以为是同乐呢，他们看上去有点儿像。</div>
+                    <div id="cardBackExPy" class="example-py">Wǒ hái yǐwéi shì Tónglè ne, tāmen kànshàngqù yǒudiǎnr xiàng.</div>
+                    <div id="cardBackExTh" class="example-th">ฉันนึกว่าเป็นถงเล่อซะอีก พวกเขาดูคล้ายกันนิดหน่อย</div>
+                    <div id="cardBackExEn" class="example-en">I mistakenly thought it was Tongle; they look a bit alike.</div>
+                  </div>
+                </div>
+
+                <!-- Sentence Details -->
+                <div id="sentenceBackContent" class="back-content hidden">
+                  <div id="cardBackSentHanzi" class="back-sentence-hanzi">
+                    我以为是同乐呢，他们看上去有点儿像。
+                  </div>
+                  <div id="cardBackSentPinyin" class="back-sentence-pinyin">
+                    Wǒ yǐwéi shì Tónglè ne, tāmen kànshàngqù yǒudiǎnr xiàng.
+                  </div>
+                  <div id="cardBackSentThai" class="back-sentence-thai">
+                    ฉันนึกว่าเป็นถงเล่อซะอีก พวกเขาดูคล้ายกันนิดหน่อย
+                  </div>
+                  <div id="cardBackSentEnglish" class="back-sentence-english">
+                    Oh, I thought it was Tongle. They do look a bit alike.
+                  </div>
+                  <div class="grammar-pill-box">
+                    <span class="grammar-tag" id="lblGrammarFocus">จุดไวยากรณ์ (Grammar)</span>
+                    <span id="cardBackGrammar" class="grammar-text">วลี “看上去/看起来” & “以为”</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div class="study-action-bar">
+            <button id="flipCardBtn" class="btn btn-secondary btn-flip">
+              🔄 ดูเฉลย / คำแปล (แตะการ์ด)
+            </button>
+
+            <!-- SRS Rating Buttons (Hidden until flipped) -->
+            <div id="srsButtonGroup" class="srs-rating-grid hidden">
+              <button class="btn-srs btn-again" data-grade="1">
+                <span class="srs-icon">🔴</span>
+                <span class="srs-label" id="srsLblAgain">ทบทวนอีก</span>
+                <span class="srs-sub" id="srsSubAgain">วนกลับมา</span>
+              </button>
+              <button class="btn-srs btn-hard" data-grade="2">
+                <span class="srs-icon">🟠</span>
+                <span class="srs-label" id="srsLblHard">ยาก</span>
+                <span class="srs-sub">1 วัน</span>
+              </button>
+              <button class="btn-srs btn-good" data-grade="3">
+                <span class="srs-icon">🟢</span>
+                <span class="srs-label" id="srsLblGood">พอได้</span>
+                <span class="srs-sub">3 วัน</span>
+              </button>
+              <button class="btn-srs btn-easy" data-grade="4">
+                <span class="srs-icon">🔵</span>
+                <span class="srs-label" id="srsLblEasy">ง่ายมาก</span>
+                <span class="srs-sub">7 วัน</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session Finished / Celebration View -->
+        <div id="reviewFinishedView" class="view-card hidden text-center">
+          <div class="celebration-hero">
+            <span class="celebrate-emoji">🎉</span>
+            <h2 id="finTitle">ทำรอบทบทวนประจำวันสำเร็จ!</h2>
+            <p id="finSubtitle">ยอดเยี่ยมมาก! การทบทวนสั้นๆ 10-15 นาทีทุกวันจะช่วยสร้างความจำระยะยาวได้ดีที่สุด</p>
+          </div>
+
+          <div class="stats-cards-row">
+            <div class="metric-card">
+              <span class="metric-val" id="summaryTotalCards">18</span>
+              <span class="metric-label" id="lblSummaryCards">จำนวนที่ทบทวน</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-val" id="summaryTimeSpent">11m 40s</span>
+              <span class="metric-label" id="lblSummaryTime">เวลาที่ใช้</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-val" id="summaryAccuracy">88%</span>
+              <span class="metric-label" id="lblSummaryAcc">อัตราจำได้</span>
+            </div>
+          </div>
+
+          <div class="breakdown-box">
+            <h3 id="lblBreakdown">ผลการประเมินตนเอง</h3>
+            <div class="breakdown-bars">
+              <div class="breakdown-item">
+                <span class="b-dot dot-easy"></span> <span id="txtFinEasy">ง่าย</span>: <strong id="countEasy">0</strong>
+              </div>
+              <div class="breakdown-item">
+                <span class="b-dot dot-good"></span> <span id="txtFinGood">พอได้</span>: <strong id="countGood">0</strong>
+              </div>
+              <div class="breakdown-item">
+                <span class="b-dot dot-hard"></span> <span id="txtFinHard">ยาก</span>: <strong id="countHard">0</strong>
+              </div>
+              <div class="breakdown-item">
+                <span class="b-dot dot-again"></span> <span id="txtFinAgain">ทบทวนอีก</span>: <strong id="countAgain">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="streak-award-banner">
+            🔥 <span id="awardStreakText">สตรีคเรียนต่อเนื่องวันที่ 1 แล้ว! พรุ่งนี้มาทบทวนต่อนะครับ</span>
+          </div>
+
+          <div class="finish-actions">
+            <button id="reviewAgainWeakBtn" class="btn btn-secondary btn-block hidden">
+              🔁 ฝึกการ์ดที่ยังไม่แม่นอีกครั้ง
+            </button>
+            <button id="finishBackBtn" class="btn btn-primary btn-block">
+              ✨ กลับหน้าหลัก / เริ่มรอบใหม่
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: CHAPTERS EXPLORER -->
+      <section id="tabChapters" class="tab-panel">
+        <div class="view-card">
+          <div class="panel-header">
+            <h2 id="chapHeading">《新HSK教程 3级》 ทั้ง 18 บทเรียน</h2>
+            <p id="chapSubheading">ดูเนื้อหาไวยากรณ์ คำศัพท์ และกดเริ่มฝึกรายบทได้ทันที</p>
+          </div>
+          <div id="chaptersList" class="chapters-vertical-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: DICTIONARY & SEARCH -->
+      <section id="tabDict" class="tab-panel">
+        <div class="view-card">
+          <div class="panel-header">
+            <h2 id="dictHeading">พจนานุกรมคำศัพท์ & ประโยค HSK 3</h2>
+            <p id="dictSubheading">ค้นหาได้ทั้งภาษาไทย (เช่น สนามบิน, แอร์), ตัวจีน (机场), พินอิน (jīchǎng) หรือภาษาอังกฤษ</p>
+          </div>
+
+          <div class="search-bar-wrap">
+            <input type="text" id="dictSearchInput" class="search-input" placeholder="พิมพ์ค้นหาคำแปลไทย (เช่น แอร์), จีน, หรือพินอิน...">
+            <select id="dictChapterSelect" class="search-select">
+              <option value="all">ทุกบทเรียน</option>
+            </select>
+          </div>
+
+          <div class="dict-results-meta">
+            <span id="dictResultPrefix">พบทั้งหมด</span> <strong id="dictResultCount">0</strong> <span id="dictResultSuffix">คำศัพท์</span>
+          </div>
+
+          <div id="dictResultsList" class="dict-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: STATS & SETTINGS -->
+      <section id="tabStats" class="tab-panel">
+        <div class="view-card">
+          <div class="panel-header">
+            <h2 id="statsHeading">ความคืบหน้า & การตั้งค่า</h2>
+            <p id="statsSubheading">สถิติการจำคำศัพท์ Spaced Repetition และสตรีคประจำวัน</p>
+          </div>
+
+          <div class="stats-overview-grid">
+            <div class="stat-box">
+              <span class="stat-number" id="statsTotalWords">261</span>
+              <span class="stat-desc" id="lblTotalVocab">คำศัพท์ HSK 3 ทั้งหมด</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-number" id="statsMasteredWords">0</span>
+              <span class="stat-desc" id="lblMastered">จำได้แม่นแล้ว (ช่วงห่าง > 3 วัน)</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-number" id="statsReviewingWords">0</span>
+              <span class="stat-desc" id="lblLearning">กำลังเรียนรู้ / ทบทวน</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-number" id="statsNeedReviewWords">0</span>
+              <span class="stat-desc" id="lblNeedsReview">ต้องฝึกฝนเพิ่ม</span>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h3 id="audioSettingsTitle">การออกเสียง (Audio Pronunciation)</h3>
+            <div class="settings-row">
+              <span id="lblSpeed">ความเร็วเสียงอ่าน:</span>
+              <div class="speed-toggle-group">
+                <button type="button" class="speed-btn active" data-rate="0.85">0.85x (สำหรับผู้เรียน)</button>
+                <button type="button" class="speed-btn" data-rate="1.0">1.0x (ปกติ)</button>
+              </div>
+            </div>
+            <p class="settings-hint" id="audioHint">ใช้ระบบสังเคราะห์เสียงจีนมาตรฐาน (zh-CN) บน iOS โดยตรง ทำงานได้รวดเร็ว เสียงชัดเจน และรองรับออฟไลน์</p>
+          </div>
+
+          <div class="settings-card">
+            <h3 id="aboutTitle">เกี่ยวกับแอปพลิเคชัน</h3>
+            <p id="aboutP1">ออกแบบสำหรับการทบทวนภาษาจีน HSK 3 ในเวลาสั้นๆ 10-15 นาทีบน iPhone, iPad และเว็บเบราว์เซอร์</p>
+            <p id="aboutP2">พร้อมสำหรับนำขึ้นรันบน <strong>PythonAnywhere</strong></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation Bar (iOS App Style) -->
+    <nav class="app-bottom-nav">
+      <button class="nav-item active" data-tab="tabReview">
+        <span class="nav-icon">📖</span>
+        <span class="nav-label" id="navReview">ทบทวน</span>
+      </button>
+      <button class="nav-item" data-tab="tabChapters">
+        <span class="nav-icon">📚</span>
+        <span class="nav-label" id="navLessons">บทเรียน</span>
+      </button>
+      <button class="nav-item" data-tab="tabDict">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label" id="navDict">พจนานุกรม</span>
+      </button>
+      <button class="nav-item" data-tab="tabStats">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label" id="navStats">สถิติ</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
