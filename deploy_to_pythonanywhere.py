@@ -20,6 +20,7 @@ FILES_TO_DEPLOY = [
     'data_hsk2.py',
     'data_hsk3_grammar.py',
     'build_full_hsk_database.py',
+    'generate_word_variations.py',
     'data/hsk3.db',
     'data/hsk3_database.json',
     'templates/index.html',

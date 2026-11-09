@@ -42,7 +42,12 @@
       tapHintWord: 'แตะที่การ์ดเพื่อดูคำแปลไทยและประโยคตัวอย่าง',
       tapHintSent: 'แตะที่การ์ดเพื่อดูเฉลยและไวยากรณ์',
       missingLabel: 'คำที่หายไป:',
-      exContextLabel: 'ตัวอย่างในบทเรียน (Example)',
+      exContextLabel: 'ตัวอย่างประโยค (Example)',
+      revealExPy: 'แตะเพื่อดูพินอิน',
+      hideExPy: 'ซ่อนพินอิน',
+      revealExTh: 'แตะเพื่อดูคำแปล',
+      hideExTh: 'ซ่อนคำแปล',
+      cycleExample: 'เปลี่ยนประโยค',
       grammarFocusLabel: 'จุดไวยากรณ์ (Grammar Focus)',
       showAnswerBtn: '🔄 ดูเฉลย / คำแปล (แตะการ์ด)',
       srsAgain: 'ทบทวนอีก',
@@ -136,7 +141,12 @@
       tapHintWord: 'Tap card to see definition & context',
       tapHintSent: 'Tap card to check full sentence & grammar',
       missingLabel: 'Missing Target:',
-      exContextLabel: 'Example in Context',
+      exContextLabel: 'Example Sentence (Context)',
+      revealExPy: 'Show Pinyin',
+      hideExPy: 'Hide Pinyin',
+      revealExTh: 'Show Meaning',
+      hideExTh: 'Hide Meaning',
+      cycleExample: 'Cycle Example',
       grammarFocusLabel: 'Grammar Focus',
       showAnswerBtn: '🔄 Show Answer (Tap Card)',
       srsAgain: 'Again',
@@ -204,8 +214,11 @@
     selectedChapters: [],
     sessionDeck: [],
     currentIndex: 0,
+    currentVariationIndex: 0,
     isCardRevealed: false,
     isPinyinVisible: false,
+    isExPinyinRevealed: false,
+    isExTransRevealed: false,
     sessionStartTime: null,
     sessionTimerInterval: null,
     sessionElapsedSeconds: 0,
@@ -292,6 +305,16 @@
     thaiDefinition: document.getElementById('thaiDefinition'),
     englishDefinition: document.getElementById('englishDefinition'),
     lblExContext: document.getElementById('lblExContext'),
+    exampleVariantIdx: document.getElementById('exampleVariantIdx'),
+    nextExampleBtn: document.getElementById('nextExampleBtn'),
+    ttsExampleBtn: document.getElementById('ttsExampleBtn'),
+    exPyContainer: document.getElementById('exPyContainer'),
+    toggleExPyBtn: document.getElementById('toggleExPyBtn'),
+    lblExPyReveal: document.getElementById('lblExPyReveal'),
+    exThContainer: document.getElementById('exThContainer'),
+    toggleExThBtn: document.getElementById('toggleExThBtn'),
+    lblExThReveal: document.getElementById('lblExThReveal'),
+    exTransWrap: document.getElementById('exTransWrap'),
     exCn: document.getElementById('exCn'),
     exPy: document.getElementById('exPy'),
     exTh: document.getElementById('exTh'),
@@ -435,6 +458,8 @@
     els.pinyinBtnText.textContent = state.isPinyinVisible ? t.hidePinyin : t.showPinyin;
     els.lblMissing.textContent = t.missingLabel;
     els.lblExContext.textContent = t.exContextLabel;
+    if (els.lblExPyReveal) els.lblExPyReveal.textContent = state.isExPinyinRevealed ? t.hideExPy : t.revealExPy;
+    if (els.lblExThReveal) els.lblExThReveal.textContent = state.isExTransRevealed ? t.hideExTh : t.revealExTh;
     els.lblGrammarFocus.textContent = t.grammarFocusLabel;
     els.showAnswerText.textContent = t.showAnswerBtn;
     els.srsAgainTxt.textContent = t.srsAgain;
@@ -766,13 +791,35 @@
     els.thaiDefinition.textContent = item.thai || '-';
     els.englishDefinition.textContent = item.english || '';
 
-    // Example Box
-    if (isWord && item.ex_cn) {
-      els.exCn.textContent = item.ex_cn;
-      els.exPy.textContent = item.ex_py || '';
-      els.exTh.textContent = item.ex_th || '';
-      els.exEn.textContent = item.ex_en || '';
+    // Example Box with Variations and Click-to-Reveal
+    state.currentVariationIndex = 0;
+    state.isExPinyinRevealed = false;
+    state.isExTransRevealed = false;
+
+    if (els.exPy) els.exPy.classList.add('hidden');
+    if (els.exTransWrap) els.exTransWrap.classList.add('hidden');
+    if (els.lblExPyReveal) els.lblExPyReveal.textContent = t.revealExPy;
+    if (els.lblExThReveal) els.lblExThReveal.textContent = t.revealExTh;
+    if (els.toggleExPyBtn) els.toggleExPyBtn.classList.remove('active');
+    if (els.toggleExThBtn) els.toggleExThBtn.classList.remove('active');
+
+    const examples = (item.examples && item.examples.length > 0) ? item.examples : (item.ex_cn ? [{
+      cn: item.ex_cn,
+      py: item.ex_py || '',
+      th: item.ex_th || '',
+      en: item.ex_en || ''
+    }] : []);
+
+    if (isWord && examples.length > 0) {
       document.getElementById('exampleBox').classList.remove('hidden');
+      const v = examples[0];
+      els.exCn.textContent = v.cn || item.ex_cn || '';
+      els.exPy.textContent = v.py || item.ex_py || '';
+      els.exTh.textContent = v.th || item.ex_th || '';
+      els.exEn.textContent = v.en || item.ex_en || '';
+
+      if (els.exampleVariantIdx) els.exampleVariantIdx.textContent = `1/${examples.length}`;
+      if (els.nextExampleBtn) els.nextExampleBtn.style.display = examples.length > 1 ? 'inline-flex' : 'none';
     } else {
       document.getElementById('exampleBox').classList.add('hidden');
     }
@@ -785,6 +832,39 @@
     } else {
       els.grammarNoteBox.classList.add('hidden');
     }
+  }
+
+  function toggleExamplePinyin(e) {
+    if (e) e.stopPropagation();
+    state.isExPinyinRevealed = !state.isExPinyinRevealed;
+    const t = I18N[state.lang] || I18N.th;
+    els.exPy.classList.toggle('hidden', !state.isExPinyinRevealed);
+    els.toggleExPyBtn.classList.toggle('active', state.isExPinyinRevealed);
+    els.lblExPyReveal.textContent = state.isExPinyinRevealed ? t.hideExPy : t.revealExPy;
+  }
+
+  function toggleExampleTrans(e) {
+    if (e) e.stopPropagation();
+    state.isExTransRevealed = !state.isExTransRevealed;
+    const t = I18N[state.lang] || I18N.th;
+    els.exTransWrap.classList.toggle('hidden', !state.isExTransRevealed);
+    els.toggleExThBtn.classList.toggle('active', state.isExTransRevealed);
+    els.lblExThReveal.textContent = state.isExTransRevealed ? t.hideExTh : t.revealExTh;
+  }
+
+  function cycleNextExample(e) {
+    if (e) e.stopPropagation();
+    const item = state.sessionDeck[state.currentIndex];
+    const examples = (item && item.examples && item.examples.length > 0) ? item.examples : [];
+    if (examples.length <= 1) return;
+
+    state.currentVariationIndex = (state.currentVariationIndex + 1) % examples.length;
+    const v = examples[state.currentVariationIndex];
+    els.exCn.textContent = v.cn;
+    els.exPy.textContent = v.py || '';
+    els.exTh.textContent = v.th || '';
+    els.exEn.textContent = v.en || '';
+    if (els.exampleVariantIdx) els.exampleVariantIdx.textContent = `${state.currentVariationIndex + 1}/${examples.length}`;
   }
 
   function revealAnswer() {
@@ -989,13 +1069,17 @@
               ${examples.map(ex => `
                 <div class="grammar-example-item">
                   <div class="example-text-group">
-                    <div class="example-cn-text">${ex.cn}</div>
-                    <div class="example-py-text">${ex.py}</div>
-                    <div class="example-th-text">${ex.th}</div>
+                    <div class="example-cn-row" style="margin-bottom: 4px; padding: 6px 10px;">
+                      <div class="example-cn-text">${ex.cn}</div>
+                      <button type="button" class="example-audio-btn" data-audio="${ex.cn}" title="ฟังเสียงอ่าน">🔊</button>
+                    </div>
+                    <div class="grammar-reveals-bar">
+                      <button type="button" class="btn-mini-reveal g-toggle-py">👁️ พินอิน</button>
+                      <button type="button" class="btn-mini-reveal g-toggle-th">👁️ คำแปล</button>
+                    </div>
+                    <div class="example-py-text hidden">${ex.py}</div>
+                    <div class="example-th-text hidden">${ex.th}</div>
                   </div>
-                  <button type="button" class="example-audio-btn" data-audio="${ex.cn}" title="ฟังเสียงอ่าน">
-                    🔊
-                  </button>
                 </div>
               `).join('')}
             </div>
@@ -1010,6 +1094,29 @@
         e.stopPropagation();
         const text = btn.dataset.audio;
         if (text) speakChinese(text);
+      });
+    });
+
+    // Attach independent reveal toggles for grammar examples
+    container.querySelectorAll('.g-toggle-py').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const group = btn.closest('.example-text-group');
+        const pyEl = group.querySelector('.example-py-text');
+        const isHidden = pyEl.classList.toggle('hidden');
+        btn.classList.toggle('active', !isHidden);
+        btn.textContent = isHidden ? '👁️ พินอิน' : '🙈 ซ่อนพินอิน';
+      });
+    });
+
+    container.querySelectorAll('.g-toggle-th').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const group = btn.closest('.example-text-group');
+        const thEl = group.querySelector('.example-th-text');
+        const isHidden = thEl.classList.toggle('hidden');
+        btn.classList.toggle('active', !isHidden);
+        btn.textContent = isHidden ? '👁️ คำแปล' : '🙈 ซ่อนคำแปล';
       });
     });
   }
@@ -1135,7 +1242,11 @@
 
     // Card Reveal on Tap
     els.flashcard.addEventListener('click', (e) => {
-      if (e.target.closest('#ttsAudioBtn') || e.target.closest('#togglePinyinBtn')) return;
+      if (e.target.closest('#ttsAudioBtn') || 
+          e.target.closest('#togglePinyinBtn') ||
+          e.target.closest('#exampleBox') ||
+          e.target.closest('.reveal-box') ||
+          e.target.closest('.audio-mini-btn')) return;
       revealAnswer();
     });
 
@@ -1143,12 +1254,56 @@
       revealAnswer();
     });
 
-    // Audio TTS Button
+    // Audio TTS Button (Word front)
     els.ttsAudioBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const item = state.sessionDeck[state.currentIndex];
       if (item) speakChinese(item.hanzi);
     });
+
+    // Audio TTS Button for Example Sentence
+    if (els.ttsExampleBtn) {
+      els.ttsExampleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const text = els.exCn.textContent;
+        if (text) speakChinese(text);
+      });
+    }
+
+    // Example Variation Cycling Button
+    if (els.nextExampleBtn) {
+      els.nextExampleBtn.addEventListener('click', (e) => {
+        cycleNextExample(e);
+      });
+    }
+
+    // Toggle Example Pinyin (Separately hidden)
+    if (els.toggleExPyBtn) {
+      els.toggleExPyBtn.addEventListener('click', (e) => {
+        toggleExamplePinyin(e);
+      });
+    }
+    if (els.exPyContainer) {
+      els.exPyContainer.addEventListener('click', (e) => {
+        if (e.target !== els.toggleExPyBtn && !els.toggleExPyBtn.contains(e.target)) {
+          toggleExamplePinyin(e);
+        }
+      });
+    }
+
+    // Toggle Example Translation (Separately hidden)
+    if (els.toggleExThBtn) {
+      els.toggleExThBtn.addEventListener('click', (e) => {
+        toggleExampleTrans(e);
+      });
+    }
+    if (els.exThContainer) {
+      els.exThContainer.addEventListener('click', (e) => {
+        if (e.target !== els.toggleExThBtn && !els.toggleExThBtn.contains(e.target)) {
+          toggleExampleTrans(e);
+        }
+      });
+    }
 
     // Toggle Pinyin
     els.togglePinyinBtn.addEventListener('click', (e) => {

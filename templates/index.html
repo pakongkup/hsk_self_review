@@ -181,13 +181,45 @@
                   <div class="english-definition" id="englishDefinition">we, us</div>
                 </div>
 
-                <!-- Example Sentence Context -->
+                <!-- Example Sentence Context with Click-to-Reveal & 5 Variations -->
                 <div class="example-box" id="exampleBox">
-                  <div class="example-label" id="lblExContext">ตัวอย่างในบทเรียน (Example)</div>
-                  <div class="example-cn" id="exCn">我们去机场接你们。</div>
-                  <div class="example-py" id="exPy">Wǒmen qù jīchǎng jiē nǐmen.</div>
-                  <div class="example-th" id="exTh">พวกเราจะไปรับพวกเธอที่สนามบิน</div>
-                  <div class="example-en" id="exEn">We will pick you up at the airport.</div>
+                  <div class="example-box-header">
+                    <span class="example-label" id="lblExContext">ตัวอย่างประโยค (Example)</span>
+                    <button type="button" id="nextExampleBtn" class="btn-example-variant" title="เปลี่ยนประโยคตัวอย่างอื่น">
+                      🔀 เปลี่ยนประโยค (<span id="exampleVariantIdx">1/5</span>)
+                    </button>
+                  </div>
+
+                  <!-- Hanzi Sentence (Always visible for reading practice) -->
+                  <div class="example-cn-row">
+                    <div class="example-cn" id="exCn">我们去机场接你们。</div>
+                    <button type="button" id="ttsExampleBtn" class="audio-mini-btn" title="ฟังเสียงอ่านประโยค">🔊</button>
+                  </div>
+
+                  <!-- Pinyin with Click-to-Reveal (Separately hidden) -->
+                  <div class="reveal-box" id="exPyContainer">
+                    <div class="reveal-header">
+                      <span class="reveal-tag">พินอิน (Pinyin)</span>
+                      <button type="button" id="toggleExPyBtn" class="btn-reveal-pill">
+                        👁️ <span id="lblExPyReveal">แตะเพื่อดูพินอิน</span>
+                      </button>
+                    </div>
+                    <div class="example-py hidden" id="exPy">Wǒmen qù jīchǎng jiē nǐmen.</div>
+                  </div>
+
+                  <!-- Translation with Click-to-Reveal (Separately hidden) -->
+                  <div class="reveal-box" id="exThContainer">
+                    <div class="reveal-header">
+                      <span class="reveal-tag">คำแปล (Meaning)</span>
+                      <button type="button" id="toggleExThBtn" class="btn-reveal-pill">
+                        👁️ <span id="lblExThReveal">แตะเพื่อดูคำแปล</span>
+                      </button>
+                    </div>
+                    <div class="example-trans-content hidden" id="exTransWrap">
+                      <div class="example-th" id="exTh">พวกเราจะไปรับพวกเธอที่สนามบิน</div>
+                      <div class="example-en" id="exEn">We will pick you up at the airport.</div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Grammar Note (for sentences) -->

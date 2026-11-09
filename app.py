@@ -110,6 +110,29 @@ def api_session():
         for r in cur.fetchall():
             if only_weak and r["last_grade"] > 2:
                 continue
+
+            examples = []
+            if "examples_json" in r.keys() and r["examples_json"]:
+                try:
+                    examples = json.loads(r["examples_json"])
+                except Exception:
+                    examples = []
+            if not examples and r["ex_cn"]:
+                examples = [{
+                    "cn": r["ex_cn"],
+                    "py": r["ex_py"],
+                    "en": r["ex_en"],
+                    "th": r["ex_th"]
+                }]
+
+            # Pick a default or random variation for initial display
+            cur_ex = random.choice(examples) if examples else {
+                "cn": r["ex_cn"] or "",
+                "py": r["ex_py"] or "",
+                "en": r["ex_en"] or "",
+                "th": r["ex_th"] or ""
+            }
+
             words_list.append({
                 "kind": "word",
                 "id": r["id"],
@@ -121,10 +144,11 @@ def api_session():
                 "english": r["english"],
                 "thai": r["thai"],
                 "pos": r["pos"],
-                "ex_cn": r["ex_cn"],
-                "ex_py": r["ex_py"],
-                "ex_en": r["ex_en"],
-                "ex_th": r["ex_th"],
+                "ex_cn": cur_ex.get("cn", r["ex_cn"]),
+                "ex_py": cur_ex.get("py", r["ex_py"]),
+                "ex_en": cur_ex.get("en", r["ex_en"]),
+                "ex_th": cur_ex.get("th", r["ex_th"]),
+                "examples": examples,
                 "repetitions": r["repetitions"],
                 "last_grade": r["last_grade"]
             })
@@ -434,6 +458,20 @@ def api_dictionary():
 
     words = []
     for r in cur.fetchall():
+        examples = []
+        if "examples_json" in r.keys() and r["examples_json"]:
+            try:
+                examples = json.loads(r["examples_json"])
+            except Exception:
+                examples = []
+        if not examples and r["ex_cn"]:
+            examples = [{
+                "cn": r["ex_cn"],
+                "py": r["ex_py"],
+                "en": r["ex_en"],
+                "th": r["ex_th"]
+            }]
+
         words.append({
             "id": r["id"],
             "level": r["level"],
@@ -448,6 +486,7 @@ def api_dictionary():
             "ex_py": r["ex_py"],
             "ex_en": r["ex_en"],
             "ex_th": r["ex_th"],
+            "examples": examples,
             "repetitions": r["repetitions"],
             "last_grade": r["last_grade"]
         })
