@@ -40,7 +40,9 @@
       showPinyin: '👁️ ดูพินอิน (Pinyin)',
       hidePinyin: '🙈 ซ่อนพินอิน',
       tapHintWord: 'แตะที่การ์ดเพื่อดูคำแปลไทยและประโยคตัวอย่าง',
-      tapHintSent: 'แตะที่การ์ดเพื่อดูเฉลยและไวยากรณ์',
+      tapHintSent: 'แตะที่การ์ดเพื่อตรวจคำตอบ (ดูเฉลยพินอินและคำแปล)',
+      clozeInstruction: '🎯 นึกคำศัพท์หรือไวยากรณ์ที่หายไปในช่องว่าง',
+      clozeContextPrefix: '💬 บริบท:',
       missingLabel: 'คำที่หายไป:',
       exContextLabel: 'ตัวอย่างประโยค (Example)',
       revealExPy: 'แตะเพื่อดูพินอิน',
@@ -139,7 +141,9 @@
       showPinyin: '👁️ Reveal Pinyin',
       hidePinyin: '🙈 Hide Pinyin',
       tapHintWord: 'Tap card to see definition & context',
-      tapHintSent: 'Tap card to check full sentence & grammar',
+      tapHintSent: 'Tap card to check answer, pinyin & translation',
+      clozeInstruction: '🎯 Recall the missing word or grammar structure',
+      clozeContextPrefix: '💬 Context:',
       missingLabel: 'Missing Target:',
       exContextLabel: 'Example Sentence (Context)',
       revealExPy: 'Show Pinyin',
@@ -219,6 +223,8 @@
     isPinyinVisible: false,
     isExPinyinRevealed: false,
     isExTransRevealed: false,
+    isClozePyRevealed: false,
+    isClozeThRevealed: false,
     sessionStartTime: null,
     sessionTimerInterval: null,
     sessionElapsedSeconds: 0,
@@ -297,8 +303,24 @@
     togglePinyinBtn: document.getElementById('togglePinyinBtn'),
     pinyinBtnText: document.getElementById('pinyinBtnText'),
     clozePromptBox: document.getElementById('clozePromptBox'),
-    lblMissing: document.getElementById('lblMissing'),
-    clozeHintContent: document.getElementById('clozeHintContent'),
+    clozeContextTag: document.getElementById('clozeContextTag'),
+    clozeInstructionText: document.getElementById('clozeInstructionText'),
+    wordAnswerBox: document.getElementById('wordAnswerBox'),
+    sentenceAnswerBox: document.getElementById('sentenceAnswerBox'),
+    clozeTargetWord: document.getElementById('clozeTargetWord'),
+    clozeTargetHint: document.getElementById('clozeTargetHint'),
+    clozeFullCn: document.getElementById('clozeFullCn'),
+    ttsClozeBtn: document.getElementById('ttsClozeBtn'),
+    clozePyContainer: document.getElementById('clozePyContainer'),
+    toggleClozePyBtn: document.getElementById('toggleClozePyBtn'),
+    lblClozePyReveal: document.getElementById('lblClozePyReveal'),
+    clozeFullPy: document.getElementById('clozeFullPy'),
+    clozeThContainer: document.getElementById('clozeThContainer'),
+    toggleClozeThBtn: document.getElementById('toggleClozeThBtn'),
+    lblClozeThReveal: document.getElementById('lblClozeThReveal'),
+    clozeTransWrap: document.getElementById('clozeTransWrap'),
+    clozeFullTh: document.getElementById('clozeFullTh'),
+    clozeFullEn: document.getElementById('clozeFullEn'),
     tapHintText: document.getElementById('tapHintText'),
     cardBack: document.getElementById('cardBack'),
     posBadge: document.getElementById('posBadge'),
@@ -460,6 +482,8 @@
     els.lblExContext.textContent = t.exContextLabel;
     if (els.lblExPyReveal) els.lblExPyReveal.textContent = state.isExPinyinRevealed ? t.hideExPy : t.revealExPy;
     if (els.lblExThReveal) els.lblExThReveal.textContent = state.isExTransRevealed ? t.hideExTh : t.revealExTh;
+    if (els.lblClozePyReveal) els.lblClozePyReveal.textContent = state.isClozePyRevealed ? t.hideExPy : t.revealExPy;
+    if (els.lblClozeThReveal) els.lblClozeThReveal.textContent = state.isClozeThRevealed ? t.hideExTh : t.revealExTh;
     els.lblGrammarFocus.textContent = t.grammarFocusLabel;
     els.showAnswerText.textContent = t.showAnswerBtn;
     els.srsAgainTxt.textContent = t.srsAgain;
@@ -748,6 +772,41 @@
     }, 1000);
   }
 
+  function formatClozeSentence(hanzi, target) {
+    if (!target) return hanzi;
+    const blankHtml = '<span class="cloze-blank-box">❓</span>';
+    if (target.includes('...') || target.includes('……')) {
+      const parts = target.replace(/……/g, '...').split('...').map(s => s.trim()).filter(Boolean);
+      let res = hanzi;
+      parts.forEach(p => {
+        if (p && res.includes(p)) {
+          res = res.replace(p, blankHtml);
+        }
+      });
+      return res;
+    } else if (hanzi.includes(target)) {
+      return hanzi.replace(target, blankHtml);
+    }
+    return `${hanzi} ${blankHtml}`;
+  }
+
+  function formatHighlightSentence(hanzi, target) {
+    if (!target) return hanzi;
+    if (target.includes('...') || target.includes('……')) {
+      const parts = target.replace(/……/g, '...').split('...').map(s => s.trim()).filter(Boolean);
+      let res = hanzi;
+      parts.forEach(p => {
+        if (p && res.includes(p)) {
+          res = res.replace(p, `<span class="highlight-target">${p}</span>`);
+        }
+      });
+      return res;
+    } else if (hanzi.includes(target)) {
+      return hanzi.replace(target, `<span class="highlight-target">${target}</span>`);
+    }
+    return `${hanzi} (<span class="highlight-target">${target}</span>)`;
+  }
+
   function renderCurrentCard() {
     const item = state.sessionDeck[state.currentIndex];
     const total = state.sessionDeck.length;
@@ -773,64 +832,67 @@
     els.cardChapter.textContent = `HSK ${item.level} · ${t.lessonPrefix} ${item.chapter}`;
 
     // Front Content
-    els.hanziDisplay.textContent = item.hanzi;
-    els.pinyinDisplay.textContent = item.pinyin;
-    els.tapHintText.textContent = isWord ? t.tapHintWord : t.tapHintSent;
-
-    // Sentence Cloze Blank
-    if (!isWord && item.cloze_target) {
-      els.clozePromptBox.classList.remove('hidden');
-      const hint = state.lang === 'th' ? (item.cloze_hint_th || item.cloze_hint_en) : item.cloze_hint_en;
-      els.clozeHintContent.textContent = hint || item.cloze_target;
-    } else {
+    if (isWord) {
+      els.hanziDisplay.textContent = item.hanzi;
+      els.pinyinDisplay.textContent = item.pinyin;
+      els.togglePinyinBtn.classList.remove('hidden');
       els.clozePromptBox.classList.add('hidden');
+      els.tapHintText.textContent = t.tapHintWord;
+      els.ttsAudioBtn.style.opacity = '1';
+    } else {
+      // Sentence Cloze: NO spoilers on front!
+      els.hanziDisplay.innerHTML = formatClozeSentence(item.hanzi, item.cloze_target);
+      els.pinyinDisplay.classList.add('hidden');
+      els.togglePinyinBtn.classList.add('hidden'); // Do not show pinyin button on front
+      els.clozePromptBox.classList.remove('hidden');
+      if (els.clozeContextTag) {
+        els.clozeContextTag.textContent = item.context ? `${t.clozeContextPrefix} ${item.context}` : `${t.clozeContextPrefix} การสนทนา`;
+      }
+      if (els.clozeInstructionText) {
+        els.clozeInstructionText.textContent = t.clozeInstruction;
+      }
+      els.tapHintText.textContent = t.tapHintSent;
+      els.ttsAudioBtn.style.opacity = '0.5';
     }
 
-    // Back Content
-    els.posBadge.textContent = item.pos || (isWord ? 'word' : 'sentence');
-    els.thaiDefinition.textContent = item.thai || '-';
-    els.englishDefinition.textContent = item.english || '';
+    // Word Back Content Setup
+    if (isWord) {
+      els.posBadge.textContent = item.pos || 'word';
+      els.thaiDefinition.textContent = item.thai || '-';
+      els.englishDefinition.textContent = item.english || '';
 
-    // Example Box with Variations and Click-to-Reveal
-    state.currentVariationIndex = 0;
-    state.isExPinyinRevealed = false;
-    state.isExTransRevealed = false;
+      // Example Box with Variations and Click-to-Reveal
+      state.currentVariationIndex = 0;
+      state.isExPinyinRevealed = false;
+      state.isExTransRevealed = false;
 
-    if (els.exPy) els.exPy.classList.add('hidden');
-    if (els.exTransWrap) els.exTransWrap.classList.add('hidden');
-    if (els.lblExPyReveal) els.lblExPyReveal.textContent = t.revealExPy;
-    if (els.lblExThReveal) els.lblExThReveal.textContent = t.revealExTh;
-    if (els.toggleExPyBtn) els.toggleExPyBtn.classList.remove('active');
-    if (els.toggleExThBtn) els.toggleExThBtn.classList.remove('active');
+      if (els.exPy) els.exPy.classList.add('hidden');
+      if (els.exTransWrap) els.exTransWrap.classList.add('hidden');
+      if (els.lblExPyReveal) els.lblExPyReveal.textContent = t.revealExPy;
+      if (els.lblExThReveal) els.lblExThReveal.textContent = t.revealExTh;
+      if (els.toggleExPyBtn) els.toggleExPyBtn.classList.remove('active');
+      if (els.toggleExThBtn) els.toggleExThBtn.classList.remove('active');
 
-    const examples = (item.examples && item.examples.length > 0) ? item.examples : (item.ex_cn ? [{
-      cn: item.ex_cn,
-      py: item.ex_py || '',
-      th: item.ex_th || '',
-      en: item.ex_en || ''
-    }] : []);
+      const examples = (item.examples && item.examples.length > 0) ? item.examples : (item.ex_cn ? [{
+        cn: item.ex_cn,
+        py: item.ex_py || '',
+        th: item.ex_th || '',
+        en: item.ex_en || ''
+      }] : []);
 
-    if (isWord && examples.length > 0) {
-      document.getElementById('exampleBox').classList.remove('hidden');
-      const v = examples[0];
-      els.exCn.textContent = v.cn || item.ex_cn || '';
-      els.exPy.textContent = v.py || item.ex_py || '';
-      els.exTh.textContent = v.th || item.ex_th || '';
-      els.exEn.textContent = v.en || item.ex_en || '';
+      if (examples.length > 0) {
+        document.getElementById('exampleBox').classList.remove('hidden');
+        const v = examples[0];
+        els.exCn.textContent = v.cn || item.ex_cn || '';
+        els.exPy.textContent = v.py || item.ex_py || '';
+        els.exTh.textContent = v.th || item.ex_th || '';
+        els.exEn.textContent = v.en || item.ex_en || '';
 
-      if (els.exampleVariantIdx) els.exampleVariantIdx.textContent = `1/${examples.length}`;
-      if (els.nextExampleBtn) els.nextExampleBtn.style.display = examples.length > 1 ? 'inline-flex' : 'none';
-    } else {
-      document.getElementById('exampleBox').classList.add('hidden');
-    }
-
-    // Grammar Note
-    if (!isWord && (item.grammar_th || item.grammar_en)) {
-      const gNote = state.lang === 'th' ? (item.grammar_th || item.grammar_en) : (item.grammar_en || item.grammar_th);
-      els.grammarNoteContent.textContent = gNote;
-      els.grammarNoteBox.classList.remove('hidden');
-    } else {
-      els.grammarNoteBox.classList.add('hidden');
+        if (els.exampleVariantIdx) els.exampleVariantIdx.textContent = `1/${examples.length}`;
+        if (els.nextExampleBtn) els.nextExampleBtn.style.display = examples.length > 1 ? 'inline-flex' : 'none';
+      } else {
+        document.getElementById('exampleBox').classList.add('hidden');
+      }
     }
   }
 
@@ -867,17 +929,80 @@
     if (els.exampleVariantIdx) els.exampleVariantIdx.textContent = `${state.currentVariationIndex + 1}/${examples.length}`;
   }
 
+  function toggleClozePinyin(e) {
+    if (e) e.stopPropagation();
+    state.isClozePyRevealed = !state.isClozePyRevealed;
+    const t = I18N[state.lang] || I18N.th;
+    els.clozeFullPy.classList.toggle('hidden', !state.isClozePyRevealed);
+    els.toggleClozePyBtn.classList.toggle('active', state.isClozePyRevealed);
+    els.lblClozePyReveal.textContent = state.isClozePyRevealed ? t.hideExPy : t.revealExPy;
+  }
+
+  function toggleClozeTrans(e) {
+    if (e) e.stopPropagation();
+    state.isClozeThRevealed = !state.isClozeThRevealed;
+    const t = I18N[state.lang] || I18N.th;
+    els.clozeTransWrap.classList.toggle('hidden', !state.isClozeThRevealed);
+    els.toggleClozeThBtn.classList.toggle('active', state.isClozeThRevealed);
+    els.lblClozeThReveal.textContent = state.isClozeThRevealed ? t.hideExTh : t.revealExTh;
+  }
+
   function revealAnswer() {
     if (state.isCardRevealed) return;
     state.isCardRevealed = true;
     els.cardBack.classList.remove('hidden');
-    els.pinyinDisplay.classList.remove('hidden');
-    els.pinyinBtnText.textContent = (I18N[state.lang] || I18N.th).hidePinyin;
     els.showAnswerBtn.classList.add('hidden');
     els.srsRatingArea.classList.remove('hidden');
+    els.ttsAudioBtn.style.opacity = '1';
+
+    const item = state.sessionDeck[state.currentIndex];
+    const isWord = item.kind === 'word';
+    const t = I18N[state.lang] || I18N.th;
+
+    if (isWord) {
+      if (els.wordAnswerBox) els.wordAnswerBox.classList.remove('hidden');
+      if (els.sentenceAnswerBox) els.sentenceAnswerBox.classList.add('hidden');
+      els.pinyinDisplay.classList.remove('hidden');
+      els.pinyinBtnText.textContent = t.hidePinyin;
+    } else {
+      // Sentence Answer Box upon reveal
+      if (els.wordAnswerBox) els.wordAnswerBox.classList.add('hidden');
+      if (els.sentenceAnswerBox) els.sentenceAnswerBox.classList.remove('hidden');
+
+      // Target answer
+      if (els.clozeTargetWord) els.clozeTargetWord.textContent = item.cloze_target || '';
+      const hint = state.lang === 'th' ? (item.cloze_hint_th || item.cloze_hint_en) : (item.cloze_hint_en || item.cloze_hint_th);
+      if (els.clozeTargetHint) els.clozeTargetHint.textContent = hint ? `(${hint})` : '';
+
+      // Full completed Chinese sentence with answer highlighted
+      if (els.clozeFullCn) els.clozeFullCn.innerHTML = formatHighlightSentence(item.hanzi, item.cloze_target);
+
+      // Full Pinyin & Translation
+      if (els.clozeFullPy) els.clozeFullPy.textContent = item.pinyin || '';
+      if (els.clozeFullTh) els.clozeFullTh.textContent = item.thai || '';
+      if (els.clozeFullEn) els.clozeFullEn.textContent = item.english || '';
+
+      // Reset Cloze Pinyin & Trans reveal states to hidden by default for reading practice
+      state.isClozePyRevealed = false;
+      state.isClozeThRevealed = false;
+      if (els.clozeFullPy) els.clozeFullPy.classList.add('hidden');
+      if (els.clozeTransWrap) els.clozeTransWrap.classList.add('hidden');
+      if (els.lblClozePyReveal) els.lblClozePyReveal.textContent = t.revealExPy;
+      if (els.lblClozeThReveal) els.lblClozeThReveal.textContent = t.revealExTh;
+      if (els.toggleClozePyBtn) els.toggleClozePyBtn.classList.remove('active');
+      if (els.toggleClozeThBtn) els.toggleClozeThBtn.classList.remove('active');
+
+      // Grammar Note
+      if (item.grammar_th || item.grammar_en) {
+        const gNote = state.lang === 'th' ? (item.grammar_th || item.grammar_en) : (item.grammar_en || item.grammar_th);
+        els.grammarNoteContent.textContent = gNote;
+        els.grammarNoteBox.classList.remove('hidden');
+      } else {
+        els.grammarNoteBox.classList.add('hidden');
+      }
+    }
 
     // Auto-play audio upon reveal for maximum audio reinforcement
-    const item = state.sessionDeck[state.currentIndex];
     if (item && item.hanzi) {
       speakChinese(item.hanzi);
     }
@@ -1245,6 +1370,7 @@
       if (e.target.closest('#ttsAudioBtn') || 
           e.target.closest('#togglePinyinBtn') ||
           e.target.closest('#exampleBox') ||
+          e.target.closest('#sentenceAnswerBox') ||
           e.target.closest('.reveal-box') ||
           e.target.closest('.audio-mini-btn')) return;
       revealAnswer();
@@ -1254,12 +1380,55 @@
       revealAnswer();
     });
 
-    // Audio TTS Button (Word front)
+    // Audio TTS Button (Word front & General TTS)
     els.ttsAudioBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const item = state.sessionDeck[state.currentIndex];
-      if (item) speakChinese(item.hanzi);
+      if (!item) return;
+      if (item.kind === 'sentence' && !state.isCardRevealed) {
+        // Do not spoil target answer before user reveals card!
+        speakChinese("请看题目，แตะการ์ดเพื่อตรวจคำตอบ");
+        return;
+      }
+      if (item.hanzi) speakChinese(item.hanzi);
     });
+
+    // Sentence Cloze Audio Button on Back (ตอนเฉลย)
+    if (els.ttsClozeBtn) {
+      els.ttsClozeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const item = state.sessionDeck[state.currentIndex];
+        if (item && item.hanzi) speakChinese(item.hanzi);
+      });
+    }
+
+    // Toggle Sentence Pinyin on Back (ตอนเฉลย)
+    if (els.toggleClozePyBtn) {
+      els.toggleClozePyBtn.addEventListener('click', (e) => {
+        toggleClozePinyin(e);
+      });
+    }
+    if (els.clozePyContainer) {
+      els.clozePyContainer.addEventListener('click', (e) => {
+        if (e.target !== els.toggleClozePyBtn && !els.toggleClozePyBtn.contains(e.target)) {
+          toggleClozePinyin(e);
+        }
+      });
+    }
+
+    // Toggle Sentence Translation on Back (ตอนเฉลย)
+    if (els.toggleClozeThBtn) {
+      els.toggleClozeThBtn.addEventListener('click', (e) => {
+        toggleClozeTrans(e);
+      });
+    }
+    if (els.clozeThContainer) {
+      els.clozeThContainer.addEventListener('click', (e) => {
+        if (e.target !== els.toggleClozeThBtn && !els.toggleClozeThBtn.contains(e.target)) {
+          toggleClozeTrans(e);
+        }
+      });
+    }
 
     // Audio TTS Button for Example Sentence
     if (els.ttsExampleBtn) {

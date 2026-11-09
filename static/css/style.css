@@ -756,13 +756,117 @@ input:checked + .slider:before {
   border-bottom-color: #eab308;
 }
 
+.cloze-blank-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 34px;
+  padding: 0 8px;
+  margin: 0 4px;
+  background: rgba(224, 36, 36, 0.08);
+  border: 2px dashed var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+[data-theme="dark"] .cloze-blank-box {
+  background: rgba(224, 36, 36, 0.2);
+  border-color: #ff6b6b;
+  color: #ff8787;
+}
+
 .cloze-box {
   background: var(--bg-secondary);
   border: 1px dashed var(--border-color);
-  padding: 10px 16px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   margin-bottom: 16px;
+  text-align: center;
+}
+
+.cloze-context-tag {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.cloze-instruction-text {
   font-size: 13px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* Sentence Solution Banner on Reveal */
+.cloze-solution-banner {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.12), rgba(0, 122, 255, 0.08));
+  border: 1.5px solid rgba(52, 199, 89, 0.35);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.solution-tag {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2fb350;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.solution-target-word {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.solution-target-hint {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.cloze-solution-sentence-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+  background: var(--bg-card);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.cloze-full-cn {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.highlight-target {
+  color: var(--accent);
+  font-weight: 800;
+  background: rgba(224, 36, 36, 0.12);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border-bottom: 2px solid var(--accent);
 }
 
 .cloze-hint-label {
