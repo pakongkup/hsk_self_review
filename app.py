@@ -20,14 +20,29 @@ def index():
 
 @app.route('/api/chapters')
 def api_chapters():
+    level_param = request.args.get('level', 'all')
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM chapters ORDER BY id")
+
+    sql = "SELECT * FROM chapters"
+    params = []
+    if level_param != 'all':
+        try:
+            sql += " WHERE level = ?"
+            params.append(int(level_param))
+        except ValueError:
+            pass
+
+    sql += " ORDER BY level, chapter_num"
+    cur.execute(sql, params)
     rows = cur.fetchall()
+
     chapters = []
     for r in rows:
         chapters.append({
             "id": r["id"],
+            "level": r["level"],
+            "chapter_num": r["chapter_num"],
             "title_cn": r["title_cn"],
             "title_pinyin": r["title_pinyin"],
             "title_en": r["title_en"],
@@ -42,6 +57,7 @@ def api_chapters():
 
 @app.route('/api/session')
 def api_session():
+    level_param = request.args.get('level', 'all')
     chapter_param = request.args.get('chapters', 'all')
     item_type = request.args.get('type', 'mixed')
     try:
@@ -53,18 +69,29 @@ def api_session():
     conn = get_db()
     cur = conn.cursor()
 
-    chapter_filter = ""
+    where_clauses = []
     params = []
+
+    if level_param != 'all':
+        try:
+            where_clauses.append("level = ?")
+            params.append(int(level_param))
+        except ValueError:
+            pass
+
     if chapter_param != 'all':
         try:
             ch_list = [int(x.strip()) for x in chapter_param.split(',') if x.strip()]
             if ch_list:
                 placeholders = ','.join(['?'] * len(ch_list))
-                chapter_filter = f"WHERE chapter_id IN ({placeholders})"
-                params = ch_list
+                # Support filtering by chapter_num or chapter_id
+                where_clauses.append(f"(chapter_num IN ({placeholders}) OR chapter_id IN ({placeholders}))")
+                params.extend(ch_list)
+                params.extend(ch_list)
         except ValueError:
-            chapter_filter = ""
-            params = []
+            pass
+
+    where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
 
     words_list = []
     sentences_list = []
@@ -77,7 +104,7 @@ def api_session():
                    COALESCE(r.last_grade, 0) as last_grade
             FROM words w
             LEFT JOIN review_stats r ON r.item_type = 'word' AND r.item_id = w.id
-            {chapter_filter}
+            {where_sql}
         """
         cur.execute(sql, params)
         for r in cur.fetchall():
@@ -86,7 +113,9 @@ def api_session():
             words_list.append({
                 "kind": "word",
                 "id": r["id"],
-                "chapter": r["chapter_id"],
+                "level": r["level"],
+                "chapter": r["chapter_num"],
+                "chapter_id": r["chapter_id"],
                 "hanzi": r["hanzi"],
                 "pinyin": r["pinyin"],
                 "english": r["english"],
@@ -108,7 +137,7 @@ def api_session():
                    COALESCE(r.last_grade, 0) as last_grade
             FROM sentences s
             LEFT JOIN review_stats r ON r.item_type = 'sentence' AND r.item_id = s.id
-            {chapter_filter}
+            {where_sql}
         """
         cur.execute(sql, params)
         for r in cur.fetchall():
@@ -117,7 +146,9 @@ def api_session():
             sentences_list.append({
                 "kind": "sentence",
                 "id": r["id"],
-                "chapter": r["chapter_id"],
+                "level": r["level"],
+                "chapter": r["chapter_num"],
+                "chapter_id": r["chapter_id"],
                 "context": r["context"],
                 "hanzi": r["hanzi"],
                 "pinyin": r["pinyin"],
@@ -243,6 +274,57 @@ def api_review():
         "ease_factor": round(ef, 2)
     })
 
+@app.route('/api/grammar')
+def api_grammar():
+    level_param = request.args.get('level', 'all')
+    chapter_param = request.args.get('chapter', 'all')
+    search = request.args.get('q', '').strip()
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    sql = "SELECT * FROM grammar_points WHERE 1=1"
+    params = []
+
+    if level_param != 'all':
+        try:
+            sql += " AND level = ?"
+            params.append(int(level_param))
+        except ValueError:
+            pass
+
+    if chapter_param != 'all':
+        try:
+            sql += " AND chapter_num = ?"
+            params.append(int(chapter_param))
+        except ValueError:
+            pass
+
+    if search:
+        sql += " AND (title_cn LIKE ? OR title_th LIKE ? OR structure LIKE ? OR explanation_th LIKE ?)"
+        term = f"%{search}%"
+        params.extend([term, term, term, term])
+
+    sql += " ORDER BY level, chapter_num, point_num"
+    cur.execute(sql, params)
+
+    grammar_points = []
+    for r in cur.fetchall():
+        grammar_points.append({
+            "id": r["id"],
+            "level": r["level"],
+            "chapter_num": r["chapter_num"],
+            "point_num": r["point_num"],
+            "title_cn": r["title_cn"],
+            "title_th": r["title_th"],
+            "structure": r["structure"],
+            "explanation_th": r["explanation_th"],
+            "examples": json.loads(r["examples_json"]) if r["examples_json"] else []
+        })
+
+    conn.close()
+    return jsonify(grammar_points)
+
 @app.route('/api/stats')
 def api_stats():
     conn = get_db()
@@ -253,6 +335,10 @@ def api_stats():
 
     cur.execute("SELECT COUNT(*) FROM sentences")
     total_sentences = cur.fetchone()[0]
+
+    # Count by level
+    cur.execute("SELECT level, COUNT(*) FROM words GROUP BY level")
+    words_by_level = {f"level_{r[0]}": r[1] for r in cur.fetchall()}
 
     cur.execute("SELECT COUNT(*) FROM review_stats WHERE item_type = 'word'")
     reviewed_words = cur.fetchone()[0]
@@ -295,6 +381,7 @@ def api_stats():
     return jsonify({
         "total_words": total_words,
         "total_sentences": total_sentences,
+        "words_by_level": words_by_level,
         "reviewed_words": reviewed_words,
         "mastered_words": mastered_words,
         "need_review_words": need_review_words,
@@ -305,6 +392,7 @@ def api_stats():
 
 @app.route('/api/dictionary')
 def api_dictionary():
+    level_param = request.args.get('level', 'all')
     chapter = request.args.get('chapter', 'all')
     search = request.args.get('q', '').strip()
 
@@ -315,16 +403,24 @@ def api_dictionary():
         SELECT w.*, 
                COALESCE(r.repetitions, 0) as repetitions,
                COALESCE(r.last_grade, 0) as last_grade
-        FROM words w
-        LEFT JOIN review_stats r ON r.item_type = 'word' AND r.item_id = w.id
-        WHERE 1=1
+            FROM words w
+            LEFT JOIN review_stats r ON r.item_type = 'word' AND r.item_id = w.id
+            WHERE 1=1
     """
     params = []
 
+    if level_param != 'all':
+        try:
+            sql += " AND w.level = ?"
+            params.append(int(level_param))
+        except ValueError:
+            pass
+
     if chapter != 'all':
         try:
-            sql += " AND w.chapter_id = ?"
-            params.append(int(chapter))
+            sql += " AND (w.chapter_num = ? OR w.chapter_id = ?)"
+            c_int = int(chapter)
+            params.extend([c_int, c_int])
         except ValueError:
             pass
 
@@ -333,14 +429,16 @@ def api_dictionary():
         term = f"%{search}%"
         params.extend([term, term, term, term])
 
-    sql += " ORDER BY w.chapter_id, w.id"
+    sql += " ORDER BY w.level, w.chapter_num, w.id"
     cur.execute(sql, params)
 
     words = []
     for r in cur.fetchall():
         words.append({
             "id": r["id"],
-            "chapter": r["chapter_id"],
+            "level": r["level"],
+            "chapter": r["chapter_num"],
+            "chapter_id": r["chapter_id"],
             "hanzi": r["hanzi"],
             "pinyin": r["pinyin"],
             "english": r["english"],

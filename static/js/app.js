@@ -1,17 +1,21 @@
-// HSK 3 Daily Review Web Application JS - Bilingual (Thai / English)
+// HSK Daily Review Web Application JS - Multi-Level (HSK 1, 2, 3) + Grammar Guide
 (function() {
   'use strict';
 
   // UI Translations
   const I18N = {
     th: {
-      appSubtitle: '《新HSK教程 3级》 ทบทวนวันละ 10-15 นาที',
+      appSubtitle: '《新HSK教程》 เล่ม 1, 2, 3 ทบทวนวันละ 10-15 นาที',
       langBtn: '🇹🇭 ภาษาไทย',
       streakUnit: 'วัน',
+      lvlAll: 'ทั้งหมด',
+      lvl1: 'เล่ม 1 (HSK 1)',
+      lvl2: 'เล่ม 2 (HSK 2)',
+      lvl3: 'เล่ม 3 (HSK 3)',
       cfgTitle: 'ทบทวนประจำวัน 10-15 นาที',
       cfgSubtitle: 'ระบบดึงความจำแบบ Active Recall ผสาน Spaced Repetition ครอบคลุมคำศัพท์และประโยคสนทนาจริงจากบทเรียน',
       lblScope: '1. เลือกบทเรียน / ขอบเขต',
-      scopeAll: 'ทุกบท (1-18)',
+      scopeAll: (n) => `ทุกบท (${n} บท)`,
       scopeCustom: 'เลือกเอง...',
       selectAll: 'เลือกทั้งหมด',
       clearAll: 'ล้างทั้งหมด',
@@ -59,10 +63,18 @@
       finStreak: (n) => `สตรีคเรียนต่อเนื่องวันที่ ${n} แล้ว! พรุ่งนี้มาทบทวนต่อนะครับ`,
       practiceWeakAgain: (n) => `🔁 ฝึกการ์ดที่ยังไม่แม่น ${n} ใบอีกครั้ง`,
       backHomeBtn: '✨ กลับหน้าหลัก / เริ่มรอบใหม่',
-      chapHeading: '《新HSK教程 3级》 ทั้ง 18 บทเรียน',
+      chapHeading: 'บทเรียนทั้งหมด',
       chapSubheading: 'ดูเนื้อหาไวยากรณ์ คำศัพท์ และกดเริ่มฝึกรายบทได้ทันที',
-      practiceLessonBtn: (n) => `🎯 ฝึกบทที่ ${n} (10 นาที)`,
-      dictHeading: 'พจนานุกรมคำศัพท์ & ประโยค HSK 3',
+      practiceLessonBtn: (lvl, n) => `🎯 ฝึกเล่ม ${lvl} บทที่ ${n} (10 นาที)`,
+      grammarHeading: 'สรุปไวยากรณ์ประจำบท (อ่านทบทวน)',
+      grammarSubheading: 'อ่านทำความเข้าใจโครงสร้างประโยค กฎไวยากรณ์ และประโยคตัวอย่างโดยไม่ต้องทำแบบทดสอบ',
+      grammarSearchPlaceholder: 'ค้นหาไวยากรณ์ (เช่น 把字句, 是...的, 比较句)...',
+      grammarFoundPrefix: 'พบทั้งหมด',
+      grammarFoundSuffix: 'หัวข้อไวยากรณ์',
+      structureLabel: 'โครงสร้างประโยค (Pattern)',
+      explanationLabel: 'คำอธิบายการใช้งาน (Explanation)',
+      examplesLabel: 'ประโยคตัวอย่าง (Examples)',
+      dictHeading: 'พจนานุกรมคำศัพท์',
       dictSubheading: 'ค้นหาได้ทั้งภาษาไทย (เช่น สนามบิน, แอร์), ตัวจีน (机场), พินอิน (jīchǎng) หรือภาษาอังกฤษ',
       dictSearchPlaceholder: 'พิมพ์ค้นหาคำแปลไทย (เช่น แอร์), จีน, หรือพินอิน...',
       allLessonsOpt: 'ทุกบทเรียน',
@@ -70,7 +82,7 @@
       dictFoundSuffix: 'คำศัพท์',
       statsHeading: 'ความคืบหน้า & การตั้งค่า',
       statsSubheading: 'สถิติการจำคำศัพท์ Spaced Repetition และสตรีคประจำวัน',
-      lblTotalVocab: 'คำศัพท์ HSK 3 ทั้งหมด',
+      lblTotalVocab: 'คำศัพท์ทั้งหมด (HSK 1-3)',
       lblMastered: 'จำได้แม่นแล้ว (ช่วงห่าง > 3 วัน)',
       lblLearning: 'กำลังเรียนรู้ / ทบทวน',
       lblNeedsReview: 'ต้องฝึกฝนเพิ่ม',
@@ -78,21 +90,26 @@
       lblSpeed: 'ความเร็วเสียงอ่าน:',
       audioHint: 'ใช้ระบบสังเคราะห์เสียงจีนมาตรฐาน (zh-CN) บน iOS โดยตรง ทำงานได้รวดเร็ว เสียงชัดเจน และรองรับออฟไลน์',
       aboutTitle: 'เกี่ยวกับแอปพลิเคชัน',
-      aboutP1: 'ออกแบบสำหรับการทบทวนภาษาจีน HSK 3 ในเวลาสั้นๆ 10-15 นาทีบน iPhone, iPad และเว็บเบราว์เซอร์',
+      aboutP1: 'ออกแบบสำหรับการทบทวนภาษาจีน HSK เล่ม 1, 2, 3 ในเวลาสั้นๆ 10-15 นาทีบน iPhone, iPad และเว็บเบราว์เซอร์',
       aboutP2: 'พร้อมสำหรับนำขึ้นรันบน PythonAnywhere',
       navReview: 'ทบทวน',
       navLessons: 'บทเรียน',
+      navGrammar: 'สรุปไวยากรณ์',
       navDict: 'พจนานุกรม',
       navStats: 'สถิติ'
     },
     en: {
-      appSubtitle: '《New HSK Course 3》 10-15 Min Daily Review',
+      appSubtitle: '《New HSK Course》 Books 1, 2, 3 Daily 10-15 Min Review',
       langBtn: '🇬🇧 English',
       streakUnit: 'Days',
+      lvlAll: 'All Levels',
+      lvl1: 'Book 1 (HSK 1)',
+      lvl2: 'Book 2 (HSK 2)',
+      lvl3: 'Book 3 (HSK 3)',
       cfgTitle: '10-15 Min Daily Review Session',
-      cfgSubtitle: 'Active recall spaced repetition for HSK 3.0 vocabulary and authentic sentence dialogues',
+      cfgSubtitle: 'Active recall spaced repetition for HSK vocabulary and authentic sentence dialogues',
       lblScope: '1. Scope Chapters / Lessons',
-      scopeAll: 'All Lessons (1-18)',
+      scopeAll: (n) => `All Chapters (${n} Lessons)`,
       scopeCustom: 'Custom Pick...',
       selectAll: 'Select All',
       clearAll: 'Clear All',
@@ -140,10 +157,18 @@
       finStreak: (n) => `Day ${n} Streak Active! Keep it going tomorrow.`,
       practiceWeakAgain: (n) => `🔁 Practice ${n} Weak Cards Again`,
       backHomeBtn: '✨ Back to Home / New Session',
-      chapHeading: '《New HSK Course 3》 18 Lessons',
+      chapHeading: 'All Chapters & Lessons',
       chapSubheading: 'Browse syllabus, grammar points, and practice any chapter directly',
-      practiceLessonBtn: (n) => `🎯 Practice Lesson ${n} (10 Min)`,
-      dictHeading: 'HSK 3 Vocabulary & Sentence Finder',
+      practiceLessonBtn: (lvl, n) => `🎯 Practice Book ${lvl} Lesson ${n} (10 Min)`,
+      grammarHeading: 'Chapter Grammar Guide (Read-Only)',
+      grammarSubheading: 'Understand patterns, syntax formulas, and authentic examples without quiz pressure',
+      grammarSearchPlaceholder: 'Search grammar rules (e.g. 把, 是...的, 比较句)...',
+      grammarFoundPrefix: 'Showing',
+      grammarFoundSuffix: 'grammar topics',
+      structureLabel: 'Sentence Pattern / Formula',
+      explanationLabel: 'Detailed Explanation',
+      examplesLabel: 'Example Sentences',
+      dictHeading: 'HSK Vocabulary & Sentence Finder',
       dictSubheading: 'Search by Thai, Chinese (机场), Pinyin (jīchǎng), or English',
       dictSearchPlaceholder: 'Search Thai (แอร์), Hanzi, Pinyin, or English...',
       allLessonsOpt: 'All Lessons',
@@ -151,77 +176,83 @@
       dictFoundSuffix: 'vocabulary entries',
       statsHeading: 'Learning Progress & Settings',
       statsSubheading: 'Spaced repetition mastery stats and daily streak',
-      lblTotalVocab: 'Total HSK 3 Words',
+      lblTotalVocab: 'Total Vocabulary (HSK 1-3)',
       lblMastered: 'Mastered (Interval > 3d)',
       lblLearning: 'Learning / Reviewing',
       lblNeedsReview: 'Needs Practice',
       audioSettingsTitle: 'Audio Pronunciation',
       lblSpeed: 'Speech Speed:',
       audioHint: 'Uses native iOS speech synthesizer (zh-CN) for zero-latency, offline-capable clear audio',
-      aboutTitle: 'About This Application',
-      aboutP1: 'Designed for 10-15 minute daily review on iPhone, iPad, and desktop web browsers',
-      aboutP2: 'Ready for 1-click deployment on PythonAnywhere',
+      aboutTitle: 'About HSK Review',
+      aboutP1: 'Designed for efficient 10-15 minute daily review across HSK 1, 2, and 3 on iPhone, iPad, and desktop',
+      aboutP2: 'Ready and optimized for PythonAnywhere hosting',
       navReview: 'Review',
       navLessons: 'Lessons',
+      navGrammar: 'Grammar',
       navDict: 'Dictionary',
       navStats: 'Progress'
     }
   };
 
-  // State
+  // State Management
   const state = {
-    lang: localStorage.getItem('hsk3_lang') || 'th', // Default to Thai
+    lang: localStorage.getItem('hsk_lang') || 'th',
+    theme: localStorage.getItem('hsk_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+    level: localStorage.getItem('hsk_level') || '3', // 'all', '1', '2', '3'
+    speechRate: parseFloat(localStorage.getItem('hsk_speech_rate') || '0.85'),
     chapters: [],
-    deck: [],
+    selectedChapters: [],
+    sessionDeck: [],
     currentIndex: 0,
-    currentCard: null,
-    isFlipped: false,
-    timerInterval: null,
-    timeRemainingSec: 600,
-    timeSpentSec: 0,
-    sessionStats: {
-      total: 0,
-      again: 0,
-      hard: 0,
-      good: 0,
-      easy: 0,
-      weakCards: []
-    },
-    audioRate: 0.85,
-    selectedScope: 'all',
-    selectedCustomChapters: new Set(),
-    activeTab: 'tabReview'
+    isCardRevealed: false,
+    isPinyinVisible: false,
+    sessionStartTime: null,
+    sessionTimerInterval: null,
+    sessionElapsedSeconds: 0,
+    gradesHistory: [],
+    weakItemIds: new Set(),
+    grammarList: [],
+    grammarFilterChapter: 'all',
+    dictChapter: 'all'
   };
 
   // DOM Elements
-  const el = {
-    langToggleBtn: document.getElementById('langToggleBtn'),
+  const els = {
+    // Header & Toggles
     headerSubtitle: document.getElementById('headerSubtitle'),
+    langToggleBtn: document.getElementById('langToggleBtn'),
     themeToggleBtn: document.getElementById('themeToggleBtn'),
     streakCount: document.getElementById('streakCount'),
     streakUnit: document.getElementById('streakUnit'),
-    navItems: document.querySelectorAll('.nav-item'),
-    tabPanels: document.querySelectorAll('.tab-panel'),
+    levelSegmentedControl: document.getElementById('levelSegmentedControl'),
+    lvlBtnAll: document.getElementById('lvlBtnAll'),
+    lvlBtn1: document.getElementById('lvlBtn1'),
+    lvlBtn2: document.getElementById('lvlBtn2'),
+    lvlBtn3: document.getElementById('lvlBtn3'),
 
-    // Nav Labels
+    // Bottom Navigation
+    navItems: document.querySelectorAll('.app-bottom-nav .nav-item'),
+    tabPanels: document.querySelectorAll('.tab-panel'),
     navReview: document.getElementById('navReview'),
     navLessons: document.getElementById('navLessons'),
+    navGrammar: document.getElementById('navGrammar'),
     navDict: document.getElementById('navDict'),
     navStats: document.getElementById('navStats'),
 
-    // Review Config View
+    // TAB 1: Review Config
+    tabReview: document.getElementById('tabReview'),
     reviewConfigView: document.getElementById('reviewConfigView'),
+    reviewActiveView: document.getElementById('reviewActiveView'),
+    reviewSummaryView: document.getElementById('reviewSummaryView'),
     cfgTitle: document.getElementById('cfgTitle'),
     cfgSubtitle: document.getElementById('cfgSubtitle'),
     lblScope: document.getElementById('lblScope'),
-    scopePills: document.querySelectorAll('.scope-pill'),
-    customScopeBtn: document.getElementById('customScopeBtn'),
+    chapterScopePills: document.getElementById('chapterScopePills'),
     customChapterSelect: document.getElementById('customChapterSelect'),
     chapterCheckboxesGrid: document.getElementById('chapterCheckboxesGrid'),
     selectAllChaptersBtn: document.getElementById('selectAllChaptersBtn'),
     clearAllChaptersBtn: document.getElementById('clearAllChaptersBtn'),
     lblMaterial: document.getElementById('lblMaterial'),
-    modeCards: document.querySelectorAll('.mode-card'),
     modeMixedTitle: document.getElementById('modeMixedTitle'),
     modeMixedDesc: document.getElementById('modeMixedDesc'),
     modeWordsTitle: document.getElementById('modeWordsTitle'),
@@ -229,100 +260,95 @@
     modeSentTitle: document.getElementById('modeSentTitle'),
     modeSentDesc: document.getElementById('modeSentDesc'),
     lblLength: document.getElementById('lblLength'),
-    len10Text: document.getElementById('len10Text'),
-    len15Text: document.getElementById('len15Text'),
-    lenIntenseText: document.getElementById('lenIntenseText'),
-    lengthPills: document.querySelectorAll('.length-pill'),
+    len10Btn: document.getElementById('len10Btn'),
+    len15Btn: document.getElementById('len15Btn'),
+    lenIntenseBtn: document.getElementById('lenIntenseBtn'),
     weakTitle: document.getElementById('weakTitle'),
     weakDesc: document.getElementById('weakDesc'),
-    onlyWeakToggle: document.getElementById('onlyWeakToggle'),
+    onlyWeakCheck: document.getElementById('onlyWeakCheck'),
     startSessionBtn: document.getElementById('startSessionBtn'),
+    startBtnText: document.getElementById('startBtnText'),
 
-    // Active Study View
-    reviewActiveView: document.getElementById('reviewActiveView'),
-    exitSessionBtn: document.getElementById('exitSessionBtn'),
-    sessionProgressText: document.getElementById('sessionProgressText'),
-    sessionTimerText: document.getElementById('sessionTimerText'),
+    // Review Active Flashcard
+    cardCounter: document.getElementById('cardCounter'),
+    sessionTimer: document.getElementById('sessionTimer'),
     sessionProgressBar: document.getElementById('sessionProgressBar'),
-    audioSpeechBtn: document.getElementById('audioSpeechBtn'),
+    quitSessionBtn: document.getElementById('quitSessionBtn'),
     flashcard: document.getElementById('flashcard'),
-    cardBadgeKind: document.getElementById('cardBadgeKind'),
-    cardBadgeChapter: document.getElementById('cardBadgeChapter'),
-    frontAudioBtn: document.getElementById('frontAudioBtn'),
+    cardBadge: document.getElementById('cardBadge'),
+    cardChapter: document.getElementById('cardChapter'),
+    ttsAudioBtn: document.getElementById('ttsAudioBtn'),
+    lblAudio: document.getElementById('lblAudio'),
+    hanziDisplay: document.getElementById('hanziDisplay'),
+    pinyinDisplay: document.getElementById('pinyinDisplay'),
     togglePinyinBtn: document.getElementById('togglePinyinBtn'),
-    tapHintWord: document.getElementById('tapHintWord'),
-    tapHintSent: document.getElementById('tapHintSent'),
-
-    // Word Front/Back
-    wordFrontContent: document.getElementById('wordFrontContent'),
-    cardHanzi: document.getElementById('cardHanzi'),
-    cardPinyin: document.getElementById('cardPinyin'),
-    wordBackContent: document.getElementById('wordBackContent'),
-    cardBackHanzi: document.getElementById('cardBackHanzi'),
-    cardBackPinyin: document.getElementById('cardBackPinyin'),
-    cardBackThai: document.getElementById('cardBackThai'),
-    cardBackEnglish: document.getElementById('cardBackEnglish'),
-    lblExContext: document.getElementById('lblExContext'),
-    cardBackExCn: document.getElementById('cardBackExCn'),
-    cardBackExPy: document.getElementById('cardBackExPy'),
-    cardBackExTh: document.getElementById('cardBackExTh'),
-    cardBackExEn: document.getElementById('cardBackExEn'),
-    exampleAudioBtn: document.getElementById('exampleAudioBtn'),
-
-    // Sentence Front/Back
-    sentenceFrontContent: document.getElementById('sentenceFrontContent'),
-    cardSentenceContext: document.getElementById('cardSentenceContext'),
-    cardSentenceHanzi: document.getElementById('cardSentenceHanzi'),
-    cardClozeBox: document.getElementById('cardClozeBox'),
+    pinyinBtnText: document.getElementById('pinyinBtnText'),
+    clozePromptBox: document.getElementById('clozePromptBox'),
     lblMissing: document.getElementById('lblMissing'),
-    cardClozeHint: document.getElementById('cardClozeHint'),
-    sentenceBackContent: document.getElementById('sentenceBackContent'),
-    cardBackSentHanzi: document.getElementById('cardBackSentHanzi'),
-    cardBackSentPinyin: document.getElementById('cardBackSentPinyin'),
-    cardBackSentThai: document.getElementById('cardBackSentThai'),
-    cardBackSentEnglish: document.getElementById('cardBackSentEnglish'),
+    clozeHintContent: document.getElementById('clozeHintContent'),
+    tapHintText: document.getElementById('tapHintText'),
+    cardBack: document.getElementById('cardBack'),
+    posBadge: document.getElementById('posBadge'),
+    thaiDefinition: document.getElementById('thaiDefinition'),
+    englishDefinition: document.getElementById('englishDefinition'),
+    lblExContext: document.getElementById('lblExContext'),
+    exCn: document.getElementById('exCn'),
+    exPy: document.getElementById('exPy'),
+    exTh: document.getElementById('exTh'),
+    exEn: document.getElementById('exEn'),
+    grammarNoteBox: document.getElementById('grammarNoteBox'),
     lblGrammarFocus: document.getElementById('lblGrammarFocus'),
-    cardBackGrammar: document.getElementById('cardBackGrammar'),
+    grammarNoteContent: document.getElementById('grammarNoteContent'),
+    showAnswerBtn: document.getElementById('showAnswerBtn'),
+    showAnswerText: document.getElementById('showAnswerText'),
+    srsRatingArea: document.getElementById('srsRatingArea'),
+    srsAgainTxt: document.getElementById('srsAgainTxt'),
+    srsAgainSubTxt: document.getElementById('srsAgainSubTxt'),
+    srsHardTxt: document.getElementById('srsHardTxt'),
+    srsGoodTxt: document.getElementById('srsGoodTxt'),
+    srsEasyTxt: document.getElementById('srsEasyTxt'),
 
-    backBadgeKind: document.getElementById('backBadgeKind'),
-    backBadgePos: document.getElementById('backBadgePos'),
-    backAudioBtn: document.getElementById('backAudioBtn'),
-    flipCardBtn: document.getElementById('flipCardBtn'),
-    srsButtonGroup: document.getElementById('srsButtonGroup'),
-    srsButtons: document.querySelectorAll('.btn-srs'),
-    srsLblAgain: document.getElementById('srsLblAgain'),
-    srsSubAgain: document.getElementById('srsSubAgain'),
-    srsLblHard: document.getElementById('srsLblHard'),
-    srsLblGood: document.getElementById('srsLblGood'),
-    srsLblEasy: document.getElementById('srsLblEasy'),
-
-    // Finished View
-    reviewFinishedView: document.getElementById('reviewFinishedView'),
+    // Review Summary
     finTitle: document.getElementById('finTitle'),
     finSubtitle: document.getElementById('finSubtitle'),
-    summaryTotalCards: document.getElementById('summaryTotalCards'),
-    summaryTimeSpent: document.getElementById('summaryTimeSpent'),
-    summaryAccuracy: document.getElementById('summaryAccuracy'),
-    lblSummaryCards: document.getElementById('lblSummaryCards'),
-    lblSummaryTime: document.getElementById('lblSummaryTime'),
-    lblSummaryAcc: document.getElementById('lblSummaryAcc'),
-    lblBreakdown: document.getElementById('lblBreakdown'),
-    txtFinEasy: document.getElementById('txtFinEasy'),
-    txtFinGood: document.getElementById('txtFinGood'),
-    txtFinHard: document.getElementById('txtFinHard'),
-    txtFinAgain: document.getElementById('txtFinAgain'),
-    countEasy: document.getElementById('countEasy'),
-    countGood: document.getElementById('countGood'),
-    countHard: document.getElementById('countHard'),
-    countAgain: document.getElementById('countAgain'),
-    awardStreakText: document.getElementById('awardStreakText'),
-    reviewAgainWeakBtn: document.getElementById('reviewAgainWeakBtn'),
-    finishBackBtn: document.getElementById('finishBackBtn'),
+    sumCardsCount: document.getElementById('sumCardsCount'),
+    finCardsLbl: document.getElementById('finCardsLbl'),
+    sumTimeSpent: document.getElementById('sumTimeSpent'),
+    finTimeLbl: document.getElementById('finTimeLbl'),
+    sumAccuracy: document.getElementById('sumAccuracy'),
+    finAccLbl: document.getElementById('finAccLbl'),
+    finBreakdownLbl: document.getElementById('finBreakdownLbl'),
+    finEasyLbl: document.getElementById('finEasyLbl'),
+    finGoodLbl: document.getElementById('finGoodLbl'),
+    finHardLbl: document.getElementById('finHardLbl'),
+    finAgainLbl: document.getElementById('finAgainLbl'),
+    cntEasy: document.getElementById('cntEasy'),
+    cntGood: document.getElementById('cntGood'),
+    cntHard: document.getElementById('cntHard'),
+    cntAgain: document.getElementById('cntAgain'),
+    streakAlertTitle: document.getElementById('streakAlertTitle'),
+    streakAlertDesc: document.getElementById('streakAlertDesc'),
+    practiceWeakBtn: document.getElementById('practiceWeakBtn'),
+    practiceWeakTxt: document.getElementById('practiceWeakTxt'),
+    backToHomeBtn: document.getElementById('backToHomeBtn'),
+    backHomeTxt: document.getElementById('backHomeTxt'),
 
-    // Chapters & Dict
+    // TAB 2: Chapters
     chapHeading: document.getElementById('chapHeading'),
     chapSubheading: document.getElementById('chapSubheading'),
-    chaptersList: document.getElementById('chaptersList'),
+    chaptersListContainer: document.getElementById('chaptersListContainer'),
+
+    // TAB 3: Grammar
+    grammarHeading: document.getElementById('grammarHeading'),
+    grammarSubheading: document.getElementById('grammarSubheading'),
+    grammarSearchInput: document.getElementById('grammarSearchInput'),
+    grammarChapterSelect: document.getElementById('grammarChapterSelect'),
+    grammarResultPrefix: document.getElementById('grammarResultPrefix'),
+    grammarResultCount: document.getElementById('grammarResultCount'),
+    grammarResultSuffix: document.getElementById('grammarResultSuffix'),
+    grammarResultsList: document.getElementById('grammarResultsList'),
+
+    // TAB 4: Dict
     dictHeading: document.getElementById('dictHeading'),
     dictSubheading: document.getElementById('dictSubheading'),
     dictSearchInput: document.getElementById('dictSearchInput'),
@@ -332,463 +358,460 @@
     dictResultSuffix: document.getElementById('dictResultSuffix'),
     dictResultsList: document.getElementById('dictResultsList'),
 
-    // Stats
+    // TAB 5: Stats
     statsHeading: document.getElementById('statsHeading'),
     statsSubheading: document.getElementById('statsSubheading'),
     statsTotalWords: document.getElementById('statsTotalWords'),
-    statsMasteredWords: document.getElementById('statsMasteredWords'),
-    statsReviewingWords: document.getElementById('statsReviewingWords'),
-    statsNeedReviewWords: document.getElementById('statsNeedReviewWords'),
     lblTotalVocab: document.getElementById('lblTotalVocab'),
+    statsMasteredWords: document.getElementById('statsMasteredWords'),
     lblMastered: document.getElementById('lblMastered'),
+    statsReviewingWords: document.getElementById('statsReviewingWords'),
     lblLearning: document.getElementById('lblLearning'),
+    statsNeedReviewWords: document.getElementById('statsNeedReviewWords'),
     lblNeedsReview: document.getElementById('lblNeedsReview'),
     audioSettingsTitle: document.getElementById('audioSettingsTitle'),
     lblSpeed: document.getElementById('lblSpeed'),
     audioHint: document.getElementById('audioHint'),
     aboutTitle: document.getElementById('aboutTitle'),
     aboutP1: document.getElementById('aboutP1'),
-    aboutP2: document.getElementById('aboutP2'),
-    speedBtns: document.querySelectorAll('.speed-btn')
+    aboutP2: document.getElementById('aboutP2')
   };
 
-  /* -------------------------------------------------------------
-     Audio / Speech Synthesis Engine (Native zh-CN)
-     ------------------------------------------------------------- */
-  let chineseVoice = null;
-
-  function initVoices() {
-    if (!('speechSynthesis' in window)) return;
-    const voices = window.speechSynthesis.getVoices();
-    chineseVoice = voices.find(v => v.lang.startsWith('zh') || v.lang === 'zh-CN') || null;
+  // Apply Theme
+  function applyTheme(theme) {
+    state.theme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('hsk_theme', theme);
+    els.themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
   }
 
-  if ('speechSynthesis' in window) {
-    initVoices();
-    window.speechSynthesis.onvoiceschanged = initVoices;
-  }
+  // Apply Language
+  function applyLanguage(lang) {
+    state.lang = lang;
+    localStorage.setItem('hsk_lang', lang);
+    const t = I18N[lang] || I18N.th;
 
-  function speak(text) {
-    if (!('speechSynthesis' in window) || !text) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'zh-CN';
-    utterance.rate = state.audioRate;
-    if (chineseVoice) utterance.voice = chineseVoice;
-    window.speechSynthesis.speak(utterance);
-  }
+    // Header
+    els.headerSubtitle.textContent = t.appSubtitle;
+    els.langToggleBtn.textContent = t.langBtn;
+    els.streakUnit.textContent = t.streakUnit;
 
-  /* -------------------------------------------------------------
-     Language Management (Thai / English)
-     ------------------------------------------------------------- */
-  function toggleLanguage() {
-    state.lang = state.lang === 'th' ? 'en' : 'th';
-    localStorage.setItem('hsk3_lang', state.lang);
-    applyLanguage();
-  }
+    // Level buttons
+    els.lvlBtnAll.textContent = t.lvlAll;
+    els.lvlBtn1.textContent = t.lvl1;
+    els.lvlBtn2.textContent = t.lvl2;
+    els.lvlBtn3.textContent = t.lvl3;
 
-  function applyLanguage() {
-    const t = I18N[state.lang];
-    document.documentElement.lang = state.lang;
+    // Bottom Navigation
+    els.navReview.textContent = t.navReview;
+    els.navLessons.textContent = t.navLessons;
+    els.navGrammar.textContent = t.navGrammar;
+    els.navDict.textContent = t.navDict;
+    els.navStats.textContent = t.navStats;
 
-    if (el.langToggleBtn) el.langToggleBtn.textContent = t.langBtn;
-    if (el.headerSubtitle) el.headerSubtitle.textContent = t.appSubtitle;
-    if (el.streakUnit) el.streakUnit.textContent = t.streakUnit;
+    // Review Config View
+    els.cfgTitle.textContent = t.cfgTitle;
+    els.cfgSubtitle.textContent = t.cfgSubtitle;
+    els.lblScope.textContent = t.lblScope;
+    els.selectAllChaptersBtn.textContent = t.selectAll;
+    els.clearAllChaptersBtn.textContent = t.clearAll;
+    els.lblMaterial.textContent = t.lblMaterial;
+    els.modeMixedTitle.textContent = t.modeMixedTitle;
+    els.modeMixedDesc.textContent = t.modeMixedDesc;
+    els.modeWordsTitle.textContent = t.modeWordsTitle;
+    els.modeWordsDesc.textContent = t.modeWordsDesc;
+    els.modeSentTitle.textContent = t.modeSentTitle;
+    els.modeSentDesc.textContent = t.modeSentDesc;
+    els.lblLength.textContent = t.lblLength;
+    els.len10Btn.textContent = t.len10;
+    els.len15Btn.textContent = t.len15;
+    els.lenIntenseBtn.textContent = t.lenIntense;
+    els.weakTitle.textContent = t.weakTitle;
+    els.weakDesc.textContent = t.weakDesc;
+    els.startBtnText.textContent = t.startBtn;
 
-    // Nav
-    if (el.navReview) el.navReview.textContent = t.navReview;
-    if (el.navLessons) el.navLessons.textContent = t.navLessons;
-    if (el.navDict) el.navDict.textContent = t.navDict;
-    if (el.navStats) el.navStats.textContent = t.navStats;
+    // Flashcard Active
+    els.lblAudio.textContent = t.listenAudio;
+    els.pinyinBtnText.textContent = state.isPinyinVisible ? t.hidePinyin : t.showPinyin;
+    els.lblMissing.textContent = t.missingLabel;
+    els.lblExContext.textContent = t.exContextLabel;
+    els.lblGrammarFocus.textContent = t.grammarFocusLabel;
+    els.showAnswerText.textContent = t.showAnswerBtn;
+    els.srsAgainTxt.textContent = t.srsAgain;
+    els.srsAgainSubTxt.textContent = t.srsAgainSub;
+    els.srsHardTxt.textContent = t.srsHard;
+    els.srsGoodTxt.textContent = t.srsGood;
+    els.srsEasyTxt.textContent = t.srsEasy;
 
-    // Config view
-    if (el.cfgTitle) el.cfgTitle.textContent = t.cfgTitle;
-    if (el.cfgSubtitle) el.cfgSubtitle.textContent = t.cfgSubtitle;
-    if (el.lblScope) el.lblScope.textContent = t.lblScope;
-    if (el.lblMaterial) el.lblMaterial.textContent = t.lblMaterial;
-    if (el.modeMixedTitle) el.modeMixedTitle.textContent = t.modeMixedTitle;
-    if (el.modeMixedDesc) el.modeMixedDesc.textContent = t.modeMixedDesc;
-    if (el.modeWordsTitle) el.modeWordsTitle.textContent = t.modeWordsTitle;
-    if (el.modeWordsDesc) el.modeWordsDesc.textContent = t.modeWordsDesc;
-    if (el.modeSentTitle) el.modeSentTitle.textContent = t.modeSentTitle;
-    if (el.modeSentDesc) el.modeSentDesc.textContent = t.modeSentDesc;
-    if (el.lblLength) el.lblLength.textContent = t.lblLength;
-    if (el.len10Text) el.len10Text.textContent = t.len10;
-    if (el.len15Text) el.len15Text.textContent = t.len15;
-    if (el.lenIntenseText) el.lenIntenseText.textContent = t.lenIntense;
-    if (el.weakTitle) el.weakTitle.textContent = t.weakTitle;
-    if (el.weakDesc) el.weakDesc.textContent = t.weakDesc;
-    if (el.startSessionBtn) el.startSessionBtn.textContent = t.startBtn;
-    if (el.selectAllChaptersBtn) el.selectAllChaptersBtn.textContent = t.selectAll;
-    if (el.clearAllChaptersBtn) el.clearAllChaptersBtn.textContent = t.clearAll;
-
-    // Study cards
-    if (el.frontAudioBtn) el.frontAudioBtn.textContent = t.listenAudio;
-    if (el.backAudioBtn) el.backAudioBtn.textContent = t.listenAudio;
-    if (el.togglePinyinBtn && el.cardPinyin) {
-      el.togglePinyinBtn.textContent = el.cardPinyin.classList.contains('hidden') ? t.showPinyin : t.hidePinyin;
-    }
-    if (el.tapHintWord) el.tapHintWord.textContent = t.tapHintWord;
-    if (el.tapHintSent) el.tapHintSent.textContent = t.tapHintSent;
-    if (el.lblMissing) el.lblMissing.textContent = t.missingLabel;
-    if (el.lblExContext) el.lblExContext.textContent = t.exContextLabel;
-    if (el.lblGrammarFocus) el.lblGrammarFocus.textContent = t.grammarFocusLabel;
-    if (el.flipCardBtn) el.flipCardBtn.textContent = t.showAnswerBtn;
-    if (el.srsLblAgain) el.srsLblAgain.textContent = t.srsAgain;
-    if (el.srsSubAgain) el.srsSubAgain.textContent = t.srsAgainSub;
-    if (el.srsLblHard) el.srsLblHard.textContent = t.srsHard;
-    if (el.srsLblGood) el.srsLblGood.textContent = t.srsGood;
-    if (el.srsLblEasy) el.srsLblEasy.textContent = t.srsEasy;
-
-    // Finished view
-    if (el.finTitle) el.finTitle.textContent = t.finTitle;
-    if (el.finSubtitle) el.finSubtitle.textContent = t.finSubtitle;
-    if (el.lblSummaryCards) el.lblSummaryCards.textContent = t.finCards;
-    if (el.lblSummaryTime) el.lblSummaryTime.textContent = t.finTime;
-    if (el.lblSummaryAcc) el.lblSummaryAcc.textContent = t.finAcc;
-    if (el.lblBreakdown) el.lblBreakdown.textContent = t.finBreakdown;
-    if (el.txtFinEasy) el.txtFinEasy.textContent = t.finEasy;
-    if (el.txtFinGood) el.txtFinGood.textContent = t.finGood;
-    if (el.txtFinHard) el.txtFinHard.textContent = t.finHard;
-    if (el.txtFinAgain) el.txtFinAgain.textContent = t.finAgain;
-    if (el.finishBackBtn) el.finishBackBtn.textContent = t.backHomeBtn;
+    // Finished Summary
+    els.finTitle.textContent = t.finTitle;
+    els.finSubtitle.textContent = t.finSubtitle;
+    els.finCardsLbl.textContent = t.finCards;
+    els.finTimeLbl.textContent = t.finTime;
+    els.finAccLbl.textContent = t.finAcc;
+    els.finBreakdownLbl.textContent = t.finBreakdown;
+    els.finEasyLbl.textContent = t.finEasy;
+    els.finGoodLbl.textContent = t.finGood;
+    els.finHardLbl.textContent = t.finHard;
+    els.finAgainLbl.textContent = t.finAgain;
+    els.backHomeTxt.textContent = t.backHomeBtn;
 
     // Chapters
-    if (el.chapHeading) el.chapHeading.textContent = t.chapHeading;
-    if (el.chapSubheading) el.chapSubheading.textContent = t.chapSubheading;
-    renderChapters();
+    els.chapHeading.textContent = t.chapHeading;
+    els.chapSubheading.textContent = t.chapSubheading;
+
+    // Grammar
+    els.grammarHeading.textContent = t.grammarHeading;
+    els.grammarSubheading.textContent = t.grammarSubheading;
+    els.grammarSearchInput.placeholder = t.grammarSearchPlaceholder;
+    els.grammarResultPrefix.textContent = t.grammarFoundPrefix;
+    els.grammarResultSuffix.textContent = t.grammarFoundSuffix;
 
     // Dictionary
-    if (el.dictHeading) el.dictHeading.textContent = t.dictHeading;
-    if (el.dictSubheading) el.dictSubheading.textContent = t.dictSubheading;
-    if (el.dictSearchInput) el.dictSearchInput.placeholder = t.dictSearchPlaceholder;
-    if (el.dictResultPrefix) el.dictResultPrefix.textContent = t.dictFoundPrefix;
-    if (el.dictResultSuffix) el.dictResultSuffix.textContent = t.dictFoundSuffix;
-    loadDictionary();
+    els.dictHeading.textContent = t.dictHeading;
+    els.dictSubheading.textContent = t.dictSubheading;
+    els.dictSearchInput.placeholder = t.dictSearchPlaceholder;
+    els.dictResultPrefix.textContent = t.dictFoundPrefix;
+    els.dictResultSuffix.textContent = t.dictFoundSuffix;
 
     // Stats
-    if (el.statsHeading) el.statsHeading.textContent = t.statsHeading;
-    if (el.statsSubheading) el.statsSubheading.textContent = t.statsSubheading;
-    if (el.lblTotalVocab) el.lblTotalVocab.textContent = t.lblTotalVocab;
-    if (el.lblMastered) el.lblMastered.textContent = t.lblMastered;
-    if (el.lblLearning) el.lblLearning.textContent = t.lblLearning;
-    if (el.lblNeedsReview) el.lblNeedsReview.textContent = t.lblNeedsReview;
-    if (el.audioSettingsTitle) el.audioSettingsTitle.textContent = t.audioSettingsTitle;
-    if (el.lblSpeed) el.lblSpeed.textContent = t.lblSpeed;
-    if (el.audioHint) el.audioHint.textContent = t.audioHint;
-    if (el.aboutTitle) el.aboutTitle.textContent = t.aboutTitle;
-    if (el.aboutP1) el.aboutP1.textContent = t.aboutP1;
-    if (el.aboutP2) el.aboutP2.textContent = t.aboutP2;
+    els.statsHeading.textContent = t.statsHeading;
+    els.statsSubheading.textContent = t.statsSubheading;
+    els.lblTotalVocab.textContent = t.lblTotalVocab;
+    els.lblMastered.textContent = t.lblMastered;
+    els.lblLearning.textContent = t.lblLearning;
+    els.lblNeedsReview.textContent = t.lblNeedsReview;
+    els.audioSettingsTitle.textContent = t.audioSettingsTitle;
+    els.lblSpeed.textContent = t.lblSpeed;
+    els.audioHint.textContent = t.audioHint;
+    els.aboutTitle.textContent = t.aboutTitle;
+    els.aboutP1.textContent = t.aboutP1;
+    els.aboutP2.textContent = t.aboutP2;
 
-    // Re-render current card if study session is active
-    if (state.currentCard && !el.reviewActiveView.classList.contains('hidden')) {
-      renderCard();
-    }
+    // Re-render dynamic components
+    rebuildScopePills();
+    renderChaptersAccordion();
+    renderGrammarGuide();
+    searchDictionary();
   }
 
-  /* -------------------------------------------------------------
-     Theme Support
-     ------------------------------------------------------------- */
-  function initTheme() {
-    const savedTheme = localStorage.getItem('hsk3_theme');
-    if (savedTheme) {
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-    updateThemeIcon();
-  }
+  // Level Management
+  function setLevel(lvl) {
+    state.level = lvl;
+    localStorage.setItem('hsk_level', lvl);
 
-  function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('hsk3_theme', next);
-    updateThemeIcon();
-  }
-
-  function updateThemeIcon() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    if (el.themeToggleBtn) el.themeToggleBtn.textContent = isDark ? '☀️' : '🌙';
-  }
-
-  /* -------------------------------------------------------------
-     Navigation Tabs
-     ------------------------------------------------------------- */
-  function switchTab(tabId) {
-    state.activeTab = tabId;
-    el.navItems.forEach(item => {
-      item.classList.toggle('active', item.dataset.tab === tabId);
-    });
-    el.tabPanels.forEach(panel => {
-      panel.classList.toggle('active', panel.id === tabId);
+    // Update Segmented Control Buttons
+    document.querySelectorAll('.level-segment-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.level === lvl);
     });
 
-    if (tabId === 'tabDict') loadDictionary();
-    if (tabId === 'tabStats') loadStats();
-    if (tabId === 'tabChapters') renderChapters();
+    // Reload chapters for this level
+    loadChapters().then(() => {
+      rebuildScopePills();
+      renderChaptersAccordion();
+      loadGrammarData();
+      searchDictionary();
+      loadStats();
+    });
   }
 
-  /* -------------------------------------------------------------
-     Initialization & Data Loading
-     ------------------------------------------------------------- */
-  async function initApp() {
-    initTheme();
-    setupEventListeners();
-    await loadChapters();
-    await loadStats();
-    applyLanguage(); // Apply Thai or English
+  // Speech Synthesizer (Native iOS zh-CN TTS)
+  function speakChinese(text) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel(); // Stop any pending speech
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'zh-CN';
+    utter.rate = state.speechRate;
+    window.speechSynthesis.speak(utter);
   }
 
+  // Load Chapters
   async function loadChapters() {
     try {
-      const res = await fetch('/api/chapters');
-      state.chapters = await res.json();
-      renderChapterCheckboxes();
-      renderChapters();
-      populateDictChapterDropdown();
+      const url = state.level === 'all' ? '/api/chapters' : `/api/chapters?level=${state.level}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      state.chapters = data;
+
+      // Update Chapter selects in Grammar & Dictionary
+      updateChapterDropdowns();
+      // Update custom checkboxes grid
+      renderCustomChapterCheckboxes();
     } catch (err) {
       console.error('Failed to load chapters:', err);
     }
   }
 
-  async function loadStats() {
-    try {
-      const res = await fetch('/api/stats');
-      const stats = await res.json();
-      if (el.streakCount) el.streakCount.textContent = stats.current_streak || 0;
-      if (el.statsTotalWords) el.statsTotalWords.textContent = stats.total_words || 261;
-      if (el.statsMasteredWords) el.statsMasteredWords.textContent = stats.mastered_words || 0;
-      if (el.statsReviewingWords) el.statsReviewingWords.textContent = (stats.reviewed_words - stats.mastered_words) || 0;
-      if (el.statsNeedReviewWords) el.statsNeedReviewWords.textContent = stats.need_review_words || 0;
-    } catch (err) {
-      console.error('Failed to load stats:', err);
-    }
+  function updateChapterDropdowns() {
+    const t = I18N[state.lang] || I18N.th;
+    const defaultOpt = `<option value="all">${t.allLessonsOpt}</option>`;
+
+    let optionsHtml = defaultOpt;
+    state.chapters.forEach(ch => {
+      const title = state.lang === 'th' ? ch.title_th : ch.title_en;
+      optionsHtml += `<option value="${ch.chapter_num}">HSK ${ch.level} · บทที่ ${ch.chapter_num}: ${ch.title_cn} (${title})</option>`;
+    });
+
+    els.grammarChapterSelect.innerHTML = optionsHtml;
+    els.dictChapterSelect.innerHTML = optionsHtml;
   }
 
-  function renderChapterCheckboxes() {
-    if (!el.chapterCheckboxesGrid) return;
-    el.chapterCheckboxesGrid.innerHTML = state.chapters.map(c => `
-      <label class="ch-item-label">
-        <input type="checkbox" value="${c.id}" class="ch-checkbox">
-        <span>L${c.id}: ${c.title_cn}</span>
+  function renderCustomChapterCheckboxes() {
+    els.chapterCheckboxesGrid.innerHTML = state.chapters.map(ch => `
+      <label class="chapter-check-item">
+        <input type="checkbox" name="customChapter" value="${ch.id}" checked>
+        <span class="chapter-check-label">
+          <strong class="level-tag">L${ch.level}·B${ch.chapter_num}</strong>
+          <span class="chapter-cn">${ch.title_cn}</span>
+        </span>
       </label>
     `).join('');
+  }
 
-    el.chapterCheckboxesGrid.querySelectorAll('.ch-checkbox').forEach(cb => {
-      cb.addEventListener('change', (e) => {
-        const val = parseInt(e.target.value);
-        if (e.target.checked) state.selectedCustomChapters.add(val);
-        else state.selectedCustomChapters.delete(val);
+  // Build Scope Pills based on level
+  function rebuildScopePills() {
+    const t = I18N[state.lang] || I18N.th;
+    const container = els.chapterScopePills;
+    const total = state.chapters.length;
+
+    let pillsHtml = `
+      <button type="button" class="scope-pill active" data-scope="all">${t.scopeAll(total)}</button>
+    `;
+
+    if (state.level === '1' || state.level === '2') {
+      pillsHtml += `
+        <button type="button" class="scope-pill" data-scope="1-3">บทที่ 1-3</button>
+        <button type="button" class="scope-pill" data-scope="4-6">บทที่ 4-6</button>
+        <button type="button" class="scope-pill" data-scope="7-9">บทที่ 7-9</button>
+        <button type="button" class="scope-pill" data-scope="10-12">บทที่ 10-12</button>
+        <button type="button" class="scope-pill" data-scope="13-15">บทที่ 13-15</button>
+      `;
+    } else if (state.level === '3') {
+      pillsHtml += `
+        <button type="button" class="scope-pill" data-scope="1-3">บทที่ 1-3</button>
+        <button type="button" class="scope-pill" data-scope="4-6">บทที่ 4-6</button>
+        <button type="button" class="scope-pill" data-scope="7-9">บทที่ 7-9</button>
+        <button type="button" class="scope-pill" data-scope="10-12">บทที่ 10-12</button>
+        <button type="button" class="scope-pill" data-scope="13-15">บทที่ 13-15</button>
+        <button type="button" class="scope-pill" data-scope="16-18">บทที่ 16-18</button>
+      `;
+    } else {
+      pillsHtml += `
+        <button type="button" class="scope-pill" data-scope="lvl1">เล่ม 1 (HSK 1)</button>
+        <button type="button" class="scope-pill" data-scope="lvl2">เล่ม 2 (HSK 2)</button>
+        <button type="button" class="scope-pill" data-scope="lvl3">เล่ม 3 (HSK 3)</button>
+      `;
+    }
+
+    pillsHtml += `
+      <button type="button" class="scope-pill" id="customScopeBtn">${t.scopeCustom}</button>
+    `;
+
+    container.innerHTML = pillsHtml;
+
+    // Bind scope pill click
+    container.querySelectorAll('.scope-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.scope-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (btn.id === 'customScopeBtn') {
+          els.customChapterSelect.classList.remove('hidden');
+        } else {
+          els.customChapterSelect.classList.add('hidden');
+        }
       });
     });
   }
 
-  function populateDictChapterDropdown() {
-    if (!el.dictChapterSelect) return;
-    const currentVal = el.dictChapterSelect.value;
-    const allText = state.lang === 'th' ? 'ทุกบทเรียน' : 'All Lessons';
-    el.dictChapterSelect.innerHTML = `<option value="all">${allText}</option>` + 
-      state.chapters.map(c => {
-        const title = state.lang === 'th' ? c.title_th : c.title_en;
-        return `<option value="${c.id}">Lesson ${c.id}: ${c.title_cn} (${title})</option>`;
-      }).join('');
-    el.dictChapterSelect.value = currentVal || 'all';
+  // Tab Switching
+  function switchTab(tabId) {
+    els.navItems.forEach(item => {
+      item.classList.toggle('active', item.dataset.tab === tabId);
+    });
+
+    els.tabPanels.forEach(panel => {
+      panel.classList.toggle('active', panel.id === tabId);
+    });
+
+    // Trigger tab specific loads
+    if (tabId === 'tabGrammar') {
+      loadGrammarData();
+    } else if (tabId === 'tabDict') {
+      searchDictionary();
+    } else if (tabId === 'tabStats') {
+      loadStats();
+    }
   }
 
-  /* -------------------------------------------------------------
-     Study Session Management (10-15 Min Core)
-     ------------------------------------------------------------- */
-  async function startStudySession(customChapterId = null) {
+  // Review Session Logic
+  async function startSession(explicitChapters = null) {
+    const sessionType = document.querySelector('input[name="sessionType"]:checked').value;
+    const countBtn = document.querySelector('.duration-pill.active');
+    const targetCount = countBtn ? parseInt(countBtn.dataset.count) : 25;
+    const onlyWeak = els.onlyWeakCheck.checked;
+
     let chaptersParam = 'all';
 
-    if (customChapterId !== null) {
-      chaptersParam = String(customChapterId);
-    } else if (state.selectedScope === 'all') {
-      chaptersParam = 'all';
-    } else if (state.selectedScope === 'custom') {
-      if (state.selectedCustomChapters.size > 0) {
-        chaptersParam = Array.from(state.selectedCustomChapters).join(',');
-      } else {
-        alert(state.lang === 'th' ? 'กรุณาเลือกอย่างน้อยหนึ่งบทเรียน หรือเลือก "ทุกบท"' : 'Please select at least one chapter.');
-        return;
+    if (explicitChapters) {
+      chaptersParam = explicitChapters.join(',');
+    } else {
+      const activeScopeBtn = document.querySelector('.scope-pill.active');
+      const scope = activeScopeBtn ? activeScopeBtn.dataset.scope : 'all';
+
+      if (scope === 'all') {
+        chaptersParam = 'all';
+      } else if (scope === 'lvl1') {
+        // Handled via level param
+      } else if (activeScopeBtn.id === 'customScopeBtn') {
+        const checked = Array.from(document.querySelectorAll('input[name="customChapter"]:checked')).map(cb => cb.value);
+        if (checked.length === 0) {
+          alert(state.lang === 'th' ? 'กรุณาเลือกบทเรียนอย่างน้อย 1 บทครับ' : 'Please select at least 1 lesson');
+          return;
+        }
+        chaptersParam = checked.join(',');
+      } else if (scope && scope.includes('-')) {
+        const [start, end] = scope.split('-').map(Number);
+        const range = [];
+        for (let i = start; i <= end; i++) range.push(i);
+        chaptersParam = range.join(',');
       }
-    } else if (state.selectedScope.includes('-')) {
-      const [start, end] = state.selectedScope.split('-').map(Number);
-      const list = [];
-      for (let i = start; i <= end; i++) list.push(i);
-      chaptersParam = list.join(',');
     }
 
-    const type = document.querySelector('input[name="sessionType"]:checked')?.value || 'mixed';
-    const count = parseInt(document.querySelector('input[name="sessionLength"]:checked')?.value || '15');
-    const onlyWeak = el.onlyWeakToggle && el.onlyWeakToggle.checked ? '1' : '0';
-
     try {
-      const url = `/api/session?chapters=${chaptersParam}&type=${type}&count=${count}&only_weak=${onlyWeak}`;
+      let url = `/api/session?level=${state.level}&chapters=${chaptersParam}&type=${sessionType}&count=${targetCount}`;
+      if (onlyWeak) url += '&only_weak=1';
+
       const res = await fetch(url);
       const data = await res.json();
 
       if (!data.items || data.items.length === 0) {
-        alert(state.lang === 'th' ? 'ไม่พบการ์ดสำหรับตัวเลือกนี้ ลองเลือก "ทุกบท" หรือปิด "เน้นคำที่ยังจำไม่แม่น"' : 'No cards found for this selection.');
+        alert(state.lang === 'th' ? 'ไม่พบการ์ดคำศัพท์ในเงื่อนไขที่เลือก กรุณาเลือกบทเรียนใหม่ครับ' : 'No items found matching criteria. Please adjust your scope.');
         return;
       }
 
-      state.deck = data.items;
+      state.sessionDeck = data.items;
       state.currentIndex = 0;
-      state.timeRemainingSec = count <= 15 ? 600 : 900;
-      state.timeSpentSec = 0;
-      state.sessionStats = {
-        total: state.deck.length,
-        again: 0,
-        hard: 0,
-        good: 0,
-        easy: 0,
-        weakCards: []
-      };
+      state.gradesHistory = [];
+      state.isCardRevealed = false;
+      state.isPinyinVisible = false;
 
-      el.reviewConfigView.classList.add('hidden');
-      el.reviewFinishedView.classList.add('hidden');
-      el.reviewActiveView.classList.remove('hidden');
+      // Switch view
+      els.reviewConfigView.classList.add('hidden');
+      els.reviewSummaryView.classList.add('hidden');
+      els.reviewActiveView.classList.remove('hidden');
 
+      // Start Timer
       startTimer();
-      renderCard();
+      renderCurrentCard();
     } catch (err) {
-      console.error('Failed to start session:', err);
-      alert('Error connecting to backend.');
+      console.error('Error starting session:', err);
+      alert('Network error loading session.');
     }
   }
 
   function startTimer() {
-    clearInterval(state.timerInterval);
-    updateTimerDisplay();
-    state.timerInterval = setInterval(() => {
-      state.timeSpentSec++;
-      if (state.timeRemainingSec > 0) {
-        state.timeRemainingSec--;
-      }
-      updateTimerDisplay();
+    clearInterval(state.sessionTimerInterval);
+    state.sessionStartTime = Date.now();
+    state.sessionElapsedSeconds = 0;
+
+    state.sessionTimerInterval = setInterval(() => {
+      state.sessionElapsedSeconds = Math.floor((Date.now() - state.sessionStartTime) / 1000);
+      const mins = String(Math.floor(state.sessionElapsedSeconds / 60)).padStart(2, '0');
+      const secs = String(state.sessionElapsedSeconds % 60).padStart(2, '0');
+      els.sessionTimer.textContent = `⏱️ ${mins}:${secs}`;
     }, 1000);
   }
 
-  function updateTimerDisplay() {
-    if (!el.sessionTimerText) return;
-    const m = Math.floor(state.timeRemainingSec / 60);
-    const s = state.timeRemainingSec % 60;
-    el.sessionTimerText.textContent = `⏱️ ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  }
+  function renderCurrentCard() {
+    const item = state.sessionDeck[state.currentIndex];
+    const total = state.sessionDeck.length;
+    const t = I18N[state.lang] || I18N.th;
 
-  function renderCard() {
-    if (state.currentIndex >= state.deck.length) {
-      finishSession();
-      return;
-    }
+    // Progress counter
+    els.cardCounter.textContent = `${state.currentIndex + 1} / ${total}`;
+    els.sessionProgressBar.style.width = `${((state.currentIndex + 1) / total) * 100}%`;
 
-    const t = I18N[state.lang];
-    const item = state.deck[state.currentIndex];
-    state.currentCard = item;
-    state.isFlipped = false;
+    // Reset card state
+    state.isCardRevealed = false;
+    state.isPinyinVisible = false;
+    els.cardBack.classList.add('hidden');
+    els.srsRatingArea.classList.add('hidden');
+    els.showAnswerBtn.classList.remove('hidden');
+    els.pinyinDisplay.classList.add('hidden');
+    els.pinyinBtnText.textContent = t.showPinyin;
 
-    el.flashcard.classList.remove('flipped');
-    el.flipCardBtn.classList.remove('hidden');
-    el.srsButtonGroup.classList.add('hidden');
+    // Meta Badge
+    const isWord = item.kind === 'word';
+    els.cardBadge.textContent = isWord ? t.cardWordBadge : t.cardSentBadge;
+    els.cardBadge.className = isWord ? 'badge' : 'badge badge-sentence';
+    els.cardChapter.textContent = `HSK ${item.level} · ${t.lessonPrefix} ${item.chapter}`;
 
-    const total = state.deck.length;
-    const current = state.currentIndex + 1;
-    el.sessionProgressText.textContent = `${state.lang === 'th' ? 'การ์ดที่' : 'Card'} ${current} / ${total}`;
-    el.sessionProgressBar.style.width = `${Math.round((current / total) * 100)}%`;
+    // Front Content
+    els.hanziDisplay.textContent = item.hanzi;
+    els.pinyinDisplay.textContent = item.pinyin;
+    els.tapHintText.textContent = isWord ? t.tapHintWord : t.tapHintSent;
 
-    el.cardBadgeChapter.textContent = `${t.lessonPrefix} ${item.chapter}`;
-    el.cardBadgeKind.textContent = item.kind === 'word' ? t.cardWordBadge : t.cardSentBadge;
-    el.cardBadgeKind.className = `badge ${item.kind === 'word' ? 'badge-word' : 'badge-sentence'}`;
-
-    el.backBadgeKind.textContent = item.kind === 'word' ? t.cardWordBadge : t.cardSentBadge;
-    el.backBadgeKind.className = `badge ${item.kind === 'word' ? 'badge-word' : 'badge-sentence'}`;
-
-    if (item.kind === 'word') {
-      el.wordFrontContent.classList.remove('hidden');
-      el.sentenceFrontContent.classList.add('hidden');
-      el.wordBackContent.classList.remove('hidden');
-      el.sentenceBackContent.classList.add('hidden');
-
-      el.cardHanzi.textContent = item.hanzi;
-      el.cardPinyin.textContent = item.pinyin;
-      el.cardPinyin.classList.add('hidden');
-      el.togglePinyinBtn.classList.remove('hidden');
-
-      // Back content
-      el.cardBackHanzi.textContent = item.hanzi;
-      el.cardBackPinyin.textContent = item.pinyin;
-      
-      // Thai and English translations
-      el.cardBackThai.textContent = item.thai || item.english || '';
-      el.cardBackEnglish.textContent = item.english || '';
-      el.backBadgePos.textContent = item.pos || 'w.';
-
-      el.cardBackExCn.textContent = item.ex_cn || '';
-      el.cardBackExPy.textContent = item.ex_py || '';
-      el.cardBackExTh.textContent = item.ex_th || '';
-      el.cardBackExEn.textContent = item.ex_en || '';
+    // Sentence Cloze Blank
+    if (!isWord && item.cloze_target) {
+      els.clozePromptBox.classList.remove('hidden');
+      const hint = state.lang === 'th' ? (item.cloze_hint_th || item.cloze_hint_en) : item.cloze_hint_en;
+      els.clozeHintContent.textContent = hint || item.cloze_target;
     } else {
-      el.wordFrontContent.classList.add('hidden');
-      el.sentenceFrontContent.classList.remove('hidden');
-      el.wordBackContent.classList.add('hidden');
-      el.sentenceBackContent.classList.remove('hidden');
+      els.clozePromptBox.classList.add('hidden');
+    }
 
-      el.cardSentenceContext.textContent = item.context || `${t.lessonPrefix} ${item.chapter}`;
+    // Back Content
+    els.posBadge.textContent = item.pos || (isWord ? 'word' : 'sentence');
+    els.thaiDefinition.textContent = item.thai || '-';
+    els.englishDefinition.textContent = item.english || '';
 
-      let displayHanzi = item.hanzi;
-      if (item.cloze_target && displayHanzi.includes(item.cloze_target)) {
-        displayHanzi = displayHanzi.replace(
-          item.cloze_target,
-          `<span class="cloze-blank">[ ___ ]</span>`
-        );
-      }
-      el.cardSentenceHanzi.innerHTML = displayHanzi;
+    // Example Box
+    if (isWord && item.ex_cn) {
+      els.exCn.textContent = item.ex_cn;
+      els.exPy.textContent = item.ex_py || '';
+      els.exTh.textContent = item.ex_th || '';
+      els.exEn.textContent = item.ex_en || '';
+      document.getElementById('exampleBox').classList.remove('hidden');
+    } else {
+      document.getElementById('exampleBox').classList.add('hidden');
+    }
 
-      // Cloze hint in Thai or English
-      const hint = state.lang === 'th' ? (item.cloze_hint_th || item.cloze_hint_en) : (item.cloze_hint_en || item.cloze_hint_th);
-      el.cardClozeHint.textContent = hint || item.cloze_target || '';
-
-      // Back content
-      el.cardBackSentHanzi.textContent = item.hanzi;
-      el.cardBackSentPinyin.textContent = item.pinyin;
-      el.cardBackSentThai.textContent = item.thai || '';
-      el.cardBackSentEnglish.textContent = item.english || '';
-
-      const grammar = state.lang === 'th' ? (item.grammar_th || item.grammar_en) : (item.grammar_en || item.grammar_th);
-      el.cardBackGrammar.textContent = grammar || 'HSK 3 Standard Structure';
+    // Grammar Note
+    if (!isWord && (item.grammar_th || item.grammar_en)) {
+      const gNote = state.lang === 'th' ? (item.grammar_th || item.grammar_en) : (item.grammar_en || item.grammar_th);
+      els.grammarNoteContent.textContent = gNote;
+      els.grammarNoteBox.classList.remove('hidden');
+    } else {
+      els.grammarNoteBox.classList.add('hidden');
     }
   }
 
-  function flipCard() {
-    if (state.isFlipped) return;
-    state.isFlipped = true;
-    el.flashcard.classList.add('flipped');
-    el.flipCardBtn.classList.add('hidden');
-    el.srsButtonGroup.classList.remove('hidden');
+  function revealAnswer() {
+    if (state.isCardRevealed) return;
+    state.isCardRevealed = true;
+    els.cardBack.classList.remove('hidden');
+    els.pinyinDisplay.classList.remove('hidden');
+    els.pinyinBtnText.textContent = (I18N[state.lang] || I18N.th).hidePinyin;
+    els.showAnswerBtn.classList.add('hidden');
+    els.srsRatingArea.classList.remove('hidden');
 
-    const textToSpeak = state.currentCard.kind === 'word' ? state.currentCard.hanzi : state.currentCard.hanzi;
-    speak(textToSpeak);
+    // Auto-play audio upon reveal for maximum audio reinforcement
+    const item = state.sessionDeck[state.currentIndex];
+    if (item && item.hanzi) {
+      speakChinese(item.hanzi);
+    }
   }
 
   async function handleGrade(grade) {
-    const item = state.currentCard;
-    if (!item) return;
+    const item = state.sessionDeck[state.currentIndex];
+    state.gradesHistory.push({ item, grade });
 
-    if (grade === 1) {
-      state.sessionStats.again++;
-      state.sessionStats.weakCards.push(item);
-      state.deck.splice(Math.min(state.currentIndex + 4, state.deck.length), 0, item);
-    } else if (grade === 2) {
-      state.sessionStats.hard++;
-      state.sessionStats.weakCards.push(item);
-    } else if (grade === 3) {
-      state.sessionStats.good++;
-    } else if (grade === 4) {
-      state.sessionStats.easy++;
+    if (grade <= 2) {
+      state.weakItemIds.add(item.id);
     }
 
+    // Send review record to backend
     try {
       fetch('/api/review', {
         method: 'POST',
@@ -797,368 +820,417 @@
           item_type: item.kind,
           item_id: item.id,
           grade: grade,
-          seconds_spent: 10
+          seconds_spent: 5
         })
       });
     } catch (e) {
-      console.warn('Failed to post review grade', e);
+      // offline fallback
     }
 
+    // Move to next card or complete
     state.currentIndex++;
-    renderCard();
+    if (state.currentIndex < state.sessionDeck.length) {
+      renderCurrentCard();
+    } else {
+      finishSession();
+    }
   }
 
   function finishSession() {
-    clearInterval(state.timerInterval);
-    const t = I18N[state.lang];
+    clearInterval(state.sessionTimerInterval);
 
-    el.reviewActiveView.classList.add('hidden');
-    el.reviewFinishedView.classList.remove('hidden');
+    els.reviewActiveView.classList.add('hidden');
+    els.reviewSummaryView.classList.remove('hidden');
 
-    const minutes = Math.floor(state.timeSpentSec / 60);
-    const seconds = state.timeSpentSec % 60;
-    el.summaryTimeSpent.textContent = `${minutes}m ${seconds}s`;
+    const total = state.gradesHistory.length;
+    const mins = Math.floor(state.sessionElapsedSeconds / 60);
+    const secs = state.sessionElapsedSeconds % 60;
+    const timeFormatted = `${mins}m ${secs}s`;
 
-    const totalRated = state.sessionStats.again + state.sessionStats.hard + state.sessionStats.good + state.sessionStats.easy;
-    el.summaryTotalCards.textContent = totalRated;
+    let easyCount = 0, goodCount = 0, hardCount = 0, againCount = 0;
+    state.gradesHistory.forEach(g => {
+      if (g.grade === 4) easyCount++;
+      else if (g.grade === 3) goodCount++;
+      else if (g.grade === 2) hardCount++;
+      else if (g.grade === 1) againCount++;
+    });
 
-    const successful = state.sessionStats.good + state.sessionStats.easy;
-    const accuracy = totalRated > 0 ? Math.round((successful / totalRated) * 100) : 100;
-    el.summaryAccuracy.textContent = `${accuracy}%`;
+    const accuracy = total > 0 ? Math.round(((goodCount + easyCount) / total) * 100) : 100;
 
-    el.countEasy.textContent = state.sessionStats.easy;
-    el.countGood.textContent = state.sessionStats.good;
-    el.countHard.textContent = state.sessionStats.hard;
-    el.countAgain.textContent = state.sessionStats.again;
+    els.sumCardsCount.textContent = total;
+    els.sumTimeSpent.textContent = timeFormatted;
+    els.sumAccuracy.textContent = `${accuracy}%`;
 
-    if (state.sessionStats.weakCards.length > 0) {
-      el.reviewAgainWeakBtn.classList.remove('hidden');
-      el.reviewAgainWeakBtn.textContent = t.practiceWeakAgain(state.sessionStats.weakCards.length);
-    } else {
-      el.reviewAgainWeakBtn.classList.add('hidden');
+    els.cntEasy.textContent = easyCount;
+    els.cntGood.textContent = goodCount;
+    els.cntHard.textContent = hardCount;
+    els.cntAgain.textContent = againCount;
+
+    // Refresh streak and stats
+    loadStats();
+  }
+
+  // Chapters Tab Accordion Rendering
+  function renderChaptersAccordion() {
+    const container = els.chaptersListContainer;
+    const t = I18N[state.lang] || I18N.th;
+
+    if (!state.chapters || state.chapters.length === 0) {
+      container.innerHTML = `<p class="empty-hint">${state.lang === 'th' ? 'ไม่พบข้อมูลบทเรียน' : 'No chapters available'}</p>`;
+      return;
     }
 
-    loadStats().then(() => {
-      const currentStreak = parseInt(el.streakCount.textContent) || 1;
-      el.awardStreakText.textContent = t.finStreak(currentStreak);
-    });
-  }
-
-  function practiceWeakCardsAgain() {
-    if (state.sessionStats.weakCards.length === 0) return;
-    const weakList = [...state.sessionStats.weakCards];
-    state.deck = weakList;
-    state.currentIndex = 0;
-    state.timeRemainingSec = 300;
-    state.timeSpentSec = 0;
-    state.sessionStats = {
-      total: weakList.length,
-      again: 0,
-      hard: 0,
-      good: 0,
-      easy: 0,
-      weakCards: []
-    };
-
-    el.reviewFinishedView.classList.add('hidden');
-    el.reviewActiveView.classList.remove('hidden');
-    startTimer();
-    renderCard();
-  }
-
-  /* -------------------------------------------------------------
-     Chapters Explorer Rendering
-     ------------------------------------------------------------- */
-  function renderChapters() {
-    if (!el.chaptersList) return;
-    const t = I18N[state.lang];
-
-    el.chaptersList.innerHTML = state.chapters.map(c => {
-      const title = state.lang === 'th' ? c.title_th : c.title_en;
-      const topic = state.lang === 'th' ? c.topic_th : c.topic_en;
-      const grammarList = state.lang === 'th' ? (c.grammar_th || c.grammar_en) : (c.grammar_en || c.grammar_th);
+    container.innerHTML = state.chapters.map(ch => {
+      const title = state.lang === 'th' ? ch.title_th : ch.title_en;
+      const topic = state.lang === 'th' ? ch.topic_th : ch.topic_en;
+      const grammars = state.lang === 'th' ? ch.grammar_th : ch.grammar_en;
 
       return `
-        <div class="chapter-card-item">
-          <div class="chapter-card-top">
-            <div>
-              <span class="ch-number">${t.lessonPrefix} ${c.id}</span>
-              <div class="ch-title-cn">${c.title_cn}</div>
-              <div class="ch-title-en">${title} (${c.title_pinyin})</div>
-              <div class="ch-topic">📌 ${topic}</div>
+        <div class="chapter-card">
+          <div class="chapter-card-header">
+            <span class="level-badge lvl-${ch.level}">HSK ${ch.level}</span>
+            <span class="chapter-card-num">${t.lessonPrefix} ${ch.chapter_num}</span>
+          </div>
+          <h3 class="chapter-card-title-cn">${ch.title_cn}</h3>
+          <p class="chapter-card-pinyin">${ch.title_pinyin}</p>
+          <p class="chapter-card-title-trans">${title}</p>
+          ${topic ? `<div class="chapter-card-topic">🏷️ ${topic}</div>` : ''}
+
+          ${grammars && grammars.length ? `
+            <div class="chapter-card-grammar">
+              <strong>${t.grammarFocusLabel}:</strong>
+              <ul>
+                ${grammars.map(g => `<li>${g}</li>`).join('')}
+              </ul>
             </div>
+          ` : ''}
+
+          <div class="chapter-card-footer">
+            <button class="btn btn-sm btn-primary practice-ch-btn" data-chapter="${ch.id}" data-level="${ch.level}" data-num="${ch.chapter_num}">
+              ${t.practiceLessonBtn(ch.level, ch.chapter_num)}
+            </button>
           </div>
-          <div class="ch-grammar-tags">
-            ${grammarList.map(g => `<span class="grammar-chip">💡 ${g}</span>`).join('')}
-          </div>
-          <button class="btn btn-secondary btn-practice-ch" data-chapter-id="${c.id}">
-            ${t.practiceLessonBtn(c.id)}
-          </button>
         </div>
       `;
     }).join('');
 
-    el.chaptersList.querySelectorAll('.btn-practice-ch').forEach(btn => {
+    // Attach click to practice button
+    container.querySelectorAll('.practice-ch-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const chId = parseInt(e.currentTarget.dataset.chapterId);
+        const chId = btn.dataset.chapter;
         switchTab('tabReview');
-        startStudySession(chId);
+        startSession([chId]);
       });
     });
   }
 
-  /* -------------------------------------------------------------
-     Dictionary Search & Browse (with Thai search support)
-     ------------------------------------------------------------- */
-  let dictTimeout = null;
+  // TAB 3: Grammar Guide Data Loading & Rendering
+  async function loadGrammarData() {
+    const query = els.grammarSearchInput.value.trim();
+    const ch = els.grammarChapterSelect.value;
+    const t = I18N[state.lang] || I18N.th;
 
-  async function loadDictionary() {
-    const q = el.dictSearchInput ? el.dictSearchInput.value : '';
-    const ch = el.dictChapterSelect ? el.dictChapterSelect.value : 'all';
+    let url = `/api/grammar?level=${state.level}&chapter=${ch}`;
+    if (query) url += `&q=${encodeURIComponent(query)}`;
 
     try {
-      const res = await fetch(`/api/dictionary?q=${encodeURIComponent(q)}&chapter=${ch}`);
-      const words = await res.json();
-
-      el.dictResultCount.textContent = words.length;
-      el.dictResultsList.innerHTML = words.map(w => {
-        const primaryMeaning = state.lang === 'th' ? (w.thai || w.english) : (w.english || w.thai);
-        const secondaryMeaning = state.lang === 'th' ? w.english : w.thai;
-        const exMeaning = state.lang === 'th' ? (w.ex_th || w.ex_en) : (w.ex_en || w.ex_th);
-
-        return `
-          <div class="dict-item">
-            <div class="dict-item-top">
-              <span class="dict-hanzi">${w.hanzi}</span>
-              <span class="dict-pinyin">${w.pinyin}</span>
-              <button class="dict-audio-btn" data-speak="${w.hanzi}">🔊</button>
-              <span class="dict-pos">${w.pos || ''} · L${w.chapter}</span>
-            </div>
-            <div class="dict-thai"><strong>${primaryMeaning}</strong></div>
-            ${secondaryMeaning && secondaryMeaning !== primaryMeaning ? `<div class="dict-english">${secondaryMeaning}</div>` : ''}
-            ${w.ex_cn ? `
-              <div class="dict-example">
-                <strong>例:</strong> ${w.ex_cn} <br>
-                <em>${w.ex_py}</em> - ${exMeaning}
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-
-      el.dictResultsList.querySelectorAll('.dict-audio-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          speak(e.currentTarget.dataset.speak);
-        });
-      });
+      const res = await fetch(url);
+      const points = await res.json();
+      state.grammarList = points;
+      renderGrammarGuide();
     } catch (err) {
-      console.error('Failed to load dictionary:', err);
+      console.error('Failed to load grammar guide:', err);
     }
   }
 
-  /* -------------------------------------------------------------
-     Event Listeners & Keybindings
-     ------------------------------------------------------------- */
-  function setupEventListeners() {
-    // Language toggle
-    if (el.langToggleBtn) el.langToggleBtn.addEventListener('click', toggleLanguage);
+  function renderGrammarGuide() {
+    const container = els.grammarResultsList;
+    const t = I18N[state.lang] || I18N.th;
+    const list = state.grammarList;
 
+    els.grammarResultCount.textContent = list.length;
+
+    if (!list || list.length === 0) {
+      container.innerHTML = `<p class="empty-hint">${state.lang === 'th' ? 'ไม่พบหัวข้อไวยากรณ์ตามเงื่อนไขที่ค้นหา' : 'No grammar topics matched your query'}</p>`;
+      return;
+    }
+
+    container.innerHTML = list.map(gp => {
+      const titleTh = gp.title_th;
+      const explanation = gp.explanation_th;
+      const examples = gp.examples || [];
+
+      return `
+        <div class="grammar-card">
+          <div class="grammar-card-header">
+            <div class="grammar-meta">
+              <span class="level-badge lvl-${gp.level}">HSK ${gp.level}</span>
+              <span class="chapter-tag">${t.lessonPrefix} ${gp.chapter_num}</span>
+            </div>
+          </div>
+
+          <h3 class="grammar-card-title">${gp.title_cn}</h3>
+          <p class="grammar-card-title-th">${titleTh}</p>
+
+          ${gp.structure ? `
+            <div class="grammar-structure-box">
+              <div class="grammar-structure-label">${t.structureLabel}</div>
+              <div class="grammar-structure-text">${gp.structure}</div>
+            </div>
+          ` : ''}
+
+          <div class="grammar-explanation">
+            ${explanation}
+          </div>
+
+          ${examples.length ? `
+            <div class="grammar-examples-box">
+              <div class="grammar-examples-label">📖 ${t.examplesLabel}</div>
+              ${examples.map(ex => `
+                <div class="grammar-example-item">
+                  <div class="example-text-group">
+                    <div class="example-cn-text">${ex.cn}</div>
+                    <div class="example-py-text">${ex.py}</div>
+                    <div class="example-th-text">${ex.th}</div>
+                  </div>
+                  <button type="button" class="example-audio-btn" data-audio="${ex.cn}" title="ฟังเสียงอ่าน">
+                    🔊
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+
+    // Attach TTS audio listeners to example buttons
+    container.querySelectorAll('.example-audio-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const text = btn.dataset.audio;
+        if (text) speakChinese(text);
+      });
+    });
+  }
+
+  // TAB 4: Dictionary Search
+  let searchTimeout = null;
+  async function searchDictionary() {
+    const query = els.dictSearchInput.value.trim();
+    const ch = els.dictChapterSelect.value;
+    const t = I18N[state.lang] || I18N.th;
+
+    let url = `/api/dictionary?level=${state.level}&chapter=${ch}`;
+    if (query) url += `&q=${encodeURIComponent(query)}`;
+
+    try {
+      const res = await fetch(url);
+      const words = await res.json();
+      renderDictionaryList(words);
+    } catch (err) {
+      console.error('Error searching dictionary:', err);
+    }
+  }
+
+  function renderDictionaryList(words) {
+    const container = els.dictResultsList;
+    const t = I18N[state.lang] || I18N.th;
+
+    els.dictResultCount.textContent = words.length;
+
+    if (!words || words.length === 0) {
+      container.innerHTML = `<p class="empty-hint">${state.lang === 'th' ? 'ไม่พบคำศัพท์ที่ตรงกับการค้นหา' : 'No words found'}</p>`;
+      return;
+    }
+
+    container.innerHTML = words.map(w => `
+      <div class="dict-card">
+        <div class="dict-card-left">
+          <div class="dict-hanzi-row">
+            <span class="level-badge lvl-${w.level}">L${w.level}</span>
+            <span class="dict-hanzi">${w.hanzi}</span>
+            <span class="dict-pinyin">${w.pinyin}</span>
+            <button type="button" class="audio-mini-btn" data-audio="${w.hanzi}">🔊</button>
+          </div>
+          <div class="dict-meaning-th">${w.thai || '-'}</div>
+          <div class="dict-meaning-en">${w.english || ''}</div>
+          ${w.ex_cn ? `
+            <div class="dict-example">
+              <span class="ex-cn">${w.ex_cn}</span>
+              <span class="ex-th">${w.ex_th || ''}</span>
+            </div>
+          ` : ''}
+        </div>
+        <div class="dict-card-right">
+          <span class="dict-pos">${w.pos || 'w'}</span>
+          <span class="dict-chapter">${t.lessonPrefix} ${w.chapter}</span>
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('.audio-mini-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        speakChinese(btn.dataset.audio);
+      });
+    });
+  }
+
+  // TAB 5: Stats Loading
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+
+      els.statsTotalWords.textContent = data.total_words;
+      els.statsMasteredWords.textContent = data.mastered_words;
+      els.statsReviewingWords.textContent = data.reviewed_words - data.mastered_words;
+      els.statsNeedReviewWords.textContent = data.need_review_words;
+
+      els.streakCount.textContent = data.current_streak;
+      els.streakAlertTitle.textContent = (I18N[state.lang] || I18N.th).finStreak(data.current_streak);
+    } catch (err) {
+      console.error('Error loading stats:', err);
+    }
+  }
+
+  // Event Listeners Binding
+  function bindEvents() {
     // Theme toggle
-    if (el.themeToggleBtn) el.themeToggleBtn.addEventListener('click', toggleTheme);
-
-    // Nav items
-    el.navItems.forEach(item => {
-      item.addEventListener('click', () => switchTab(item.dataset.tab));
+    els.themeToggleBtn.addEventListener('click', () => {
+      applyTheme(state.theme === 'dark' ? 'light' : 'dark');
     });
 
-    // Scope Pills
-    el.scopePills.forEach(pill => {
-      pill.addEventListener('click', (e) => {
-        el.scopePills.forEach(p => p.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        state.selectedScope = e.currentTarget.dataset.scope || 'custom';
-        if (state.selectedScope === 'custom') {
-          el.customChapterSelect.classList.remove('hidden');
-        } else {
-          el.customChapterSelect.classList.add('hidden');
-        }
+    // Language toggle
+    els.langToggleBtn.addEventListener('click', () => {
+      applyLanguage(state.lang === 'th' ? 'en' : 'th');
+    });
+
+    // Level selector segmented control
+    document.querySelectorAll('.level-segment-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setLevel(btn.dataset.level);
       });
     });
 
-    // Custom pick buttons
-    if (el.selectAllChaptersBtn) {
-      el.selectAllChaptersBtn.addEventListener('click', () => {
-        document.querySelectorAll('.ch-checkbox').forEach(cb => {
-          cb.checked = true;
-          state.selectedCustomChapters.add(parseInt(cb.value));
-        });
-      });
-    }
-
-    if (el.clearAllChaptersBtn) {
-      el.clearAllChaptersBtn.addEventListener('click', () => {
-        document.querySelectorAll('.ch-checkbox').forEach(cb => {
-          cb.checked = false;
-        });
-        state.selectedCustomChapters.clear();
-      });
-    }
-
-    // Mode Cards
-    el.modeCards.forEach(card => {
-      card.addEventListener('click', () => {
-        el.modeCards.forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        card.querySelector('input').checked = true;
+    // Bottom nav tabs
+    els.navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        switchTab(item.dataset.tab);
       });
     });
 
-    // Length Pills
-    el.lengthPills.forEach(pill => {
-      pill.addEventListener('click', () => {
-        el.lengthPills.forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        pill.querySelector('input').checked = true;
+    // Session duration pills
+    document.querySelectorAll('.duration-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.duration-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
       });
     });
 
     // Start Session Button
-    if (el.startSessionBtn) {
-      el.startSessionBtn.addEventListener('click', () => startStudySession());
-    }
+    els.startSessionBtn.addEventListener('click', () => {
+      startSession();
+    });
 
-    // Exit Session
-    if (el.exitSessionBtn) {
-      el.exitSessionBtn.addEventListener('click', () => {
-        const msg = state.lang === 'th' ? 'คุณแน่ใจหรือไม่ว่าต้องการจบการทบทวนรอบนี้?' : 'Are you sure you want to end this review session?';
-        if (confirm(msg)) {
-          clearInterval(state.timerInterval);
-          el.reviewActiveView.classList.add('hidden');
-          el.reviewConfigView.classList.remove('hidden');
-        }
-      });
-    }
+    // Card Reveal on Tap
+    els.flashcard.addEventListener('click', (e) => {
+      if (e.target.closest('#ttsAudioBtn') || e.target.closest('#togglePinyinBtn')) return;
+      revealAnswer();
+    });
 
-    // Flip Card triggers
-    if (el.flashcard) el.flashcard.addEventListener('click', flipCard);
-    if (el.flipCardBtn) el.flipCardBtn.addEventListener('click', flipCard);
+    els.showAnswerBtn.addEventListener('click', () => {
+      revealAnswer();
+    });
+
+    // Audio TTS Button
+    els.ttsAudioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const item = state.sessionDeck[state.currentIndex];
+      if (item) speakChinese(item.hanzi);
+    });
 
     // Toggle Pinyin
-    if (el.togglePinyinBtn) {
-      el.togglePinyinBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        el.cardPinyin.classList.toggle('hidden');
-        const t = I18N[state.lang];
-        el.togglePinyinBtn.textContent = el.cardPinyin.classList.contains('hidden') ? t.showPinyin : t.hidePinyin;
-      });
-    }
-
-    // Audio triggers on card
-    if (el.frontAudioBtn) {
-      el.frontAudioBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (state.currentCard) speak(state.currentCard.hanzi);
-      });
-    }
-    if (el.backAudioBtn) {
-      el.backAudioBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (state.currentCard) speak(state.currentCard.hanzi);
-      });
-    }
-    if (el.audioSpeechBtn) {
-      el.audioSpeechBtn.addEventListener('click', () => {
-        if (state.currentCard) speak(state.currentCard.hanzi);
-      });
-    }
-    if (el.exampleAudioBtn) {
-      el.exampleAudioBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (state.currentCard && state.currentCard.ex_cn) speak(state.currentCard.ex_cn);
-      });
-    }
+    els.togglePinyinBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.isPinyinVisible = !state.isPinyinVisible;
+      els.pinyinDisplay.classList.toggle('hidden', !state.isPinyinVisible);
+      const t = I18N[state.lang] || I18N.th;
+      els.pinyinBtnText.textContent = state.isPinyinVisible ? t.hidePinyin : t.showPinyin;
+    });
 
     // SRS Ratings
-    el.srsButtons.forEach(btn => {
+    document.querySelectorAll('.srs-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const grade = parseInt(e.currentTarget.dataset.grade);
+        const grade = parseInt(btn.dataset.grade);
         handleGrade(grade);
       });
     });
 
-    // Finished view buttons
-    if (el.finishBackBtn) {
-      el.finishBackBtn.addEventListener('click', () => {
-        el.reviewFinishedView.classList.add('hidden');
-        el.reviewConfigView.classList.remove('hidden');
-      });
-    }
-    if (el.reviewAgainWeakBtn) {
-      el.reviewAgainWeakBtn.addEventListener('click', practiceWeakCardsAgain);
-    }
+    // Quit session
+    els.quitSessionBtn.addEventListener('click', () => {
+      if (confirm(state.lang === 'th' ? 'คุณต้องการออกจากการทบทวนรอบนี้ใช่หรือไม่?' : 'Do you want to quit this session?')) {
+        clearInterval(state.sessionTimerInterval);
+        els.reviewActiveView.classList.add('hidden');
+        els.reviewConfigView.classList.remove('hidden');
+      }
+    });
 
-    // Dict search inputs
-    if (el.dictSearchInput) {
-      el.dictSearchInput.addEventListener('input', () => {
-        clearTimeout(dictTimeout);
-        dictTimeout = setTimeout(loadDictionary, 250);
-      });
-    }
-    if (el.dictChapterSelect) {
-      el.dictChapterSelect.addEventListener('change', loadDictionary);
-    }
+    // Back to home from summary
+    els.backToHomeBtn.addEventListener('click', () => {
+      els.reviewSummaryView.classList.add('hidden');
+      els.reviewConfigView.classList.remove('hidden');
+    });
 
-    // Speed buttons
-    el.speedBtns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        el.speedBtns.forEach(b => b.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        state.audioRate = parseFloat(e.currentTarget.dataset.rate);
+    // Grammar Search Input
+    els.grammarSearchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(loadGrammarData, 250);
+    });
+
+    // Grammar Chapter Select
+    els.grammarChapterSelect.addEventListener('change', () => {
+      loadGrammarData();
+    });
+
+    // Dict Search Input
+    els.dictSearchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(searchDictionary, 250);
+    });
+
+    // Dict Chapter Select
+    els.dictChapterSelect.addEventListener('change', () => {
+      searchDictionary();
+    });
+
+    // Speed toggle
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.speechRate = parseFloat(btn.dataset.rate);
+        localStorage.setItem('hsk_speech_rate', state.speechRate);
       });
     });
 
-    // Touch swipe gesture for iPhone / iPad
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    if (el.flashcard) {
-      el.flashcard.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-      }, { passive: true });
-
-      el.flashcard.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        const diff = touchEndX - touchStartX;
-        if (Math.abs(diff) > 60) {
-          if (!state.isFlipped) {
-            flipCard();
-          } else {
-            if (diff < -60) handleGrade(2);
-            else if (diff > 60) handleGrade(3);
-          }
-        }
-      }, { passive: true });
-    }
-
-    // Keyboard Shortcuts (Space to flip, 1-4 for SRS, S for speak)
-    window.addEventListener('keydown', (e) => {
-      if (state.activeTab !== 'tabReview' || el.reviewActiveView.classList.contains('hidden')) return;
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-
-      if (e.code === 'Space') {
-        e.preventDefault();
-        flipCard();
-      } else if (e.key === 's' || e.key === 'S') {
-        if (state.currentCard) speak(state.currentCard.hanzi);
-      } else if (state.isFlipped) {
-        if (e.key === '1') handleGrade(1);
-        if (e.key === '2') handleGrade(2);
-        if (e.key === '3') handleGrade(3);
-        if (e.key === '4') handleGrade(4);
-      }
+    // Select/Clear all custom chapters
+    els.selectAllChaptersBtn.addEventListener('click', () => {
+      document.querySelectorAll('input[name="customChapter"]').forEach(cb => cb.checked = true);
+    });
+    els.clearAllChaptersBtn.addEventListener('click', () => {
+      document.querySelectorAll('input[name="customChapter"]').forEach(cb => cb.checked = false);
     });
   }
 
-  document.addEventListener('DOMContentLoaded', initApp);
+  // Initialization
+  async function init() {
+    applyTheme(state.theme);
+    bindEvents();
+    setLevel(state.level);
+    applyLanguage(state.lang);
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
 })();

@@ -978,105 +978,110 @@ full_db = {
     "sentences": sentences_data
 }
 
-json_path = "data/hsk3_database.json"
-with open(json_path, "w", encoding="utf-8") as f:
-    json.dump(full_db, f, ensure_ascii=False, indent=2)
+def save_to_db():
+    json_path = "data/hsk3_database.json"
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(full_db, f, ensure_ascii=False, indent=2)
 
-print(f"Saved {json_path} successfully!")
-print(f"Total chapters: {len(chapters_data)}")
-print(f"Total vocabulary words: {len(words_data)}")
-print(f"Total authentic sentence items: {len(sentences_data)}")
+    print(f"Saved {json_path} successfully!")
+    print(f"Total chapters: {len(chapters_data)}")
+    print(f"Total vocabulary words: {len(words_data)}")
+    print(f"Total authentic sentence items: {len(sentences_data)}")
 
-# Create SQLite database for super fast queries and progress tracking
-db_path = "data/hsk3.db"
-conn = sqlite3.connect(db_path)
-cur = conn.cursor()
+    # Create SQLite database for super fast queries and progress tracking
+    db_path = "data/hsk3.db"
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
 
-cur.execute("""
-CREATE TABLE IF NOT EXISTS chapters (
-    id INTEGER PRIMARY KEY,
-    title_cn TEXT,
-    title_pinyin TEXT,
-    title_en TEXT,
-    topic TEXT,
-    grammar_json TEXT
-)
-""")
-
-cur.execute("""
-CREATE TABLE IF NOT EXISTS words (
-    id INTEGER PRIMARY KEY,
-    chapter_id INTEGER,
-    hanzi TEXT,
-    pinyin TEXT,
-    english TEXT,
-    pos TEXT,
-    ex_cn TEXT,
-    ex_py TEXT,
-    ex_en TEXT
-)
-""")
-
-cur.execute("""
-CREATE TABLE IF NOT EXISTS sentences (
-    id INTEGER PRIMARY KEY,
-    chapter_id INTEGER,
-    context TEXT,
-    hanzi TEXT,
-    pinyin TEXT,
-    english TEXT,
-    cloze_target TEXT,
-    cloze_hint TEXT,
-    grammar_point TEXT
-)
-""")
-
-cur.execute("""
-CREATE TABLE IF NOT EXISTS review_stats (
-    item_type TEXT,
-    item_id INTEGER,
-    ease_factor REAL DEFAULT 2.5,
-    interval_days INTEGER DEFAULT 0,
-    repetitions INTEGER DEFAULT 0,
-    last_grade INTEGER,
-    last_reviewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    next_review_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (item_type, item_id)
-)
-""")
-
-cur.execute("""
-CREATE TABLE IF NOT EXISTS daily_streaks (
-    study_date TEXT PRIMARY KEY,
-    items_reviewed INTEGER DEFAULT 0,
-    minutes_spent INTEGER DEFAULT 0
-)
-""")
-
-# Populate chapters
-cur.execute("DELETE FROM chapters")
-for c in chapters_data:
-    cur.execute(
-        "INSERT INTO chapters VALUES (?, ?, ?, ?, ?, ?)",
-        (c["id"], c["title_cn"], c["title_pinyin"], c["title_en"], c["topic"], json.dumps(c["grammar"], ensure_ascii=False))
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS chapters (
+        id INTEGER PRIMARY KEY,
+        title_cn TEXT,
+        title_pinyin TEXT,
+        title_en TEXT,
+        topic TEXT,
+        grammar_json TEXT
     )
+    """)
 
-# Populate words
-cur.execute("DELETE FROM words")
-for w in words_data:
-    cur.execute(
-        "INSERT INTO words VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (w["id"], w["chapter"], w["hanzi"], w["pinyin"], w["english"], w["pos"], w["ex_cn"], w["ex_py"], w["ex_en"])
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS words (
+        id INTEGER PRIMARY KEY,
+        chapter_id INTEGER,
+        hanzi TEXT,
+        pinyin TEXT,
+        english TEXT,
+        pos TEXT,
+        ex_cn TEXT,
+        ex_py TEXT,
+        ex_en TEXT
     )
+    """)
 
-# Populate sentences
-cur.execute("DELETE FROM sentences")
-for s in sentences_data:
-    cur.execute(
-        "INSERT INTO sentences VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (s["id"], s["chapter"], s["context"], s["hanzi"], s["pinyin"], s["english"], s["cloze_target"], s["cloze_hint"], s["grammar_point"])
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS sentences (
+        id INTEGER PRIMARY KEY,
+        chapter_id INTEGER,
+        context TEXT,
+        hanzi TEXT,
+        pinyin TEXT,
+        english TEXT,
+        cloze_target TEXT,
+        cloze_hint TEXT,
+        grammar_point TEXT
     )
+    """)
 
-conn.commit()
-conn.close()
-print(f"SQLite database successfully initialized at {db_path}!")
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS review_stats (
+        item_type TEXT,
+        item_id INTEGER,
+        ease_factor REAL DEFAULT 2.5,
+        interval_days INTEGER DEFAULT 0,
+        repetitions INTEGER DEFAULT 0,
+        last_grade INTEGER,
+        last_reviewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        next_review_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (item_type, item_id)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS daily_streaks (
+        study_date TEXT PRIMARY KEY,
+        items_reviewed INTEGER DEFAULT 0,
+        minutes_spent INTEGER DEFAULT 0
+    )
+    """)
+
+    # Populate chapters
+    cur.execute("DELETE FROM chapters")
+    for c in chapters_data:
+        cur.execute(
+            "INSERT INTO chapters VALUES (?, ?, ?, ?, ?, ?)",
+            (c["id"], c["title_cn"], c["title_pinyin"], c["title_en"], c["topic"], json.dumps(c["grammar"], ensure_ascii=False))
+        )
+
+    # Populate words
+    cur.execute("DELETE FROM words")
+    for w in words_data:
+        cur.execute(
+            "INSERT INTO words VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (w["id"], w["chapter"], w["hanzi"], w["pinyin"], w["english"], w["pos"], w["ex_cn"], w["ex_py"], w["ex_en"])
+        )
+
+    # Populate sentences
+    cur.execute("DELETE FROM sentences")
+    for s in sentences_data:
+        cur.execute(
+            "INSERT INTO sentences VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (s["id"], s["chapter"], s["context"], s["hanzi"], s["pinyin"], s["english"], s["cloze_target"], s["cloze_hint"], s["grammar_point"])
+        )
+
+    conn.commit()
+    conn.close()
+    print(f"SQLite database successfully initialized at {db_path}!")
+
+if __name__ == '__main__':
+    save_to_db()
+
