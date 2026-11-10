@@ -39,6 +39,9 @@
       listenAudio: '🔊 ฟังเสียง',
       showPinyin: '👁️ ดูพินอิน (Pinyin)',
       hidePinyin: '🙈 ซ่อนพินอิน',
+      showHint: '💡 แตะเพื่อดูคำใบ้ (Hint)',
+      hideHint: '🙈 ซ่อนคำใบ้',
+      hintPrefix: 'คำใบ้:',
       tapHintWord: 'แตะที่การ์ดเพื่อดูคำแปลไทยและประโยคตัวอย่าง',
       tapHintSent: 'แตะที่การ์ดเพื่อตรวจคำตอบ (ดูเฉลยพินอินและคำแปล)',
       clozeInstruction: '🎯 นึกคำศัพท์หรือไวยากรณ์ที่หายไปในช่องว่าง',
@@ -140,6 +143,9 @@
       listenAudio: '🔊 Speak',
       showPinyin: '👁️ Reveal Pinyin',
       hidePinyin: '🙈 Hide Pinyin',
+      showHint: '💡 Reveal Hint',
+      hideHint: '🙈 Hide Hint',
+      hintPrefix: 'Hint:',
       tapHintWord: 'Tap card to see definition & context',
       tapHintSent: 'Tap card to check answer, pinyin & translation',
       clozeInstruction: '🎯 Recall the missing word or grammar structure',
@@ -225,6 +231,7 @@
     isExTransRevealed: false,
     isClozePyRevealed: false,
     isClozeThRevealed: false,
+    isClozeHintRevealed: false,
     sessionStartTime: null,
     sessionTimerInterval: null,
     sessionElapsedSeconds: 0,
@@ -305,6 +312,10 @@
     clozePromptBox: document.getElementById('clozePromptBox'),
     clozeContextTag: document.getElementById('clozeContextTag'),
     clozeInstructionText: document.getElementById('clozeInstructionText'),
+    toggleClozeHintBtn: document.getElementById('toggleClozeHintBtn'),
+    lblClozeHintBtn: document.getElementById('lblClozeHintBtn'),
+    clozeHintTextWrap: document.getElementById('clozeHintTextWrap'),
+    clozeHintMeaning: document.getElementById('clozeHintMeaning'),
     wordAnswerBox: document.getElementById('wordAnswerBox'),
     sentenceAnswerBox: document.getElementById('sentenceAnswerBox'),
     clozeTargetWord: document.getElementById('clozeTargetWord'),
@@ -696,7 +707,7 @@
   // Review Session Logic
   async function startSession(explicitChapters = null) {
     const sessionType = document.querySelector('input[name="sessionType"]:checked').value;
-    const countBtn = document.querySelector('.duration-pill.active');
+    const countBtn = document.querySelector('.duration-pill.active, .length-pill.active');
     const targetCount = countBtn ? parseInt(countBtn.dataset.count) : 25;
     const onlyWeak = els.onlyWeakCheck.checked;
 
@@ -819,6 +830,8 @@
     // Reset card state
     state.isCardRevealed = false;
     state.isPinyinVisible = false;
+    state.isClozeHintRevealed = false;
+    els.flashcard.classList.remove('flipped');
     els.cardBack.classList.add('hidden');
     els.srsRatingArea.classList.add('hidden');
     els.showAnswerBtn.classList.remove('hidden');
@@ -833,6 +846,7 @@
 
     // Front Content
     if (isWord) {
+      els.hanziDisplay.className = 'hanzi-display hanzi-text';
       els.hanziDisplay.textContent = item.hanzi;
       els.pinyinDisplay.textContent = item.pinyin;
       els.togglePinyinBtn.classList.remove('hidden');
@@ -841,6 +855,7 @@
       els.ttsAudioBtn.style.opacity = '1';
     } else {
       // Sentence Cloze: NO spoilers on front!
+      els.hanziDisplay.className = 'sentence-hanzi-display sentence-text';
       els.hanziDisplay.innerHTML = formatClozeSentence(item.hanzi, item.cloze_target);
       els.pinyinDisplay.classList.add('hidden');
       els.togglePinyinBtn.classList.add('hidden'); // Do not show pinyin button on front
@@ -850,6 +865,21 @@
       }
       if (els.clozeInstructionText) {
         els.clozeInstructionText.textContent = t.clozeInstruction;
+      }
+      // Sentence Hint setup
+      const hintMeaning = state.lang === 'th' ? (item.cloze_hint_th || item.cloze_hint_en || '') : (item.cloze_hint_en || item.cloze_hint_th || '');
+      if (els.clozeHintMeaning) {
+        els.clozeHintMeaning.textContent = hintMeaning;
+      }
+      if (els.clozeHintTextWrap) {
+        els.clozeHintTextWrap.classList.add('hidden');
+      }
+      if (els.lblClozeHintBtn) {
+        els.lblClozeHintBtn.textContent = t.showHint || '💡 แตะเพื่อดูคำใบ้ (Hint)';
+      }
+      if (els.toggleClozeHintBtn) {
+        els.toggleClozeHintBtn.classList.remove('active');
+        els.toggleClozeHintBtn.style.display = hintMeaning ? 'inline-flex' : 'none';
       }
       els.tapHintText.textContent = t.tapHintSent;
       els.ttsAudioBtn.style.opacity = '0.5';
@@ -947,9 +977,25 @@
     els.lblClozeThReveal.textContent = state.isClozeThRevealed ? t.hideExTh : t.revealExTh;
   }
 
+  function toggleClozeHint(e) {
+    if (e) e.stopPropagation();
+    state.isClozeHintRevealed = !state.isClozeHintRevealed;
+    const t = I18N[state.lang] || I18N.th;
+    if (els.clozeHintTextWrap) {
+      els.clozeHintTextWrap.classList.toggle('hidden', !state.isClozeHintRevealed);
+    }
+    if (els.lblClozeHintBtn) {
+      els.lblClozeHintBtn.textContent = state.isClozeHintRevealed ? (t.hideHint || '🙈 ซ่อนคำใบ้') : (t.showHint || '💡 แตะเพื่อดูคำใบ้ (Hint)');
+    }
+    if (els.toggleClozeHintBtn) {
+      els.toggleClozeHintBtn.classList.toggle('active', state.isClozeHintRevealed);
+    }
+  }
+
   function revealAnswer() {
     if (state.isCardRevealed) return;
     state.isCardRevealed = true;
+    els.flashcard.classList.add('flipped');
     els.cardBack.classList.remove('hidden');
     els.showAnswerBtn.classList.add('hidden');
     els.srsRatingArea.classList.remove('hidden');
@@ -1353,9 +1399,9 @@
     });
 
     // Session duration pills
-    document.querySelectorAll('.duration-pill').forEach(btn => {
+    document.querySelectorAll('.duration-pill, .length-pill').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.duration-pill').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.duration-pill, .length-pill').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
       });
     });
@@ -1365,10 +1411,18 @@
       startSession();
     });
 
+    // Sentence Cloze Hint Button on Front
+    if (els.toggleClozeHintBtn) {
+      els.toggleClozeHintBtn.addEventListener('click', (e) => {
+        toggleClozeHint(e);
+      });
+    }
+
     // Card Reveal on Tap
     els.flashcard.addEventListener('click', (e) => {
       if (e.target.closest('#ttsAudioBtn') || 
           e.target.closest('#togglePinyinBtn') ||
+          e.target.closest('#toggleClozeHintBtn') ||
           e.target.closest('#exampleBox') ||
           e.target.closest('#sentenceAnswerBox') ||
           e.target.closest('.reveal-box') ||
@@ -1387,7 +1441,7 @@
       if (!item) return;
       if (item.kind === 'sentence' && !state.isCardRevealed) {
         // Do not spoil target answer before user reveals card!
-        speakChinese("请看题目，แตะการ์ดเพื่อตรวจคำตอบ");
+        speakChinese("请思考答案");
         return;
       }
       if (item.hanzi) speakChinese(item.hanzi);

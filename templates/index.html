@@ -101,10 +101,10 @@
           <!-- Duration & Card Count -->
           <div class="form-section">
             <label class="section-label" id="lblLength">3. ระยะเวลาเป้าหมาย</label>
-            <div class="duration-pills">
-              <button type="button" class="duration-pill" data-count="15" id="len10Btn">⚡ 10 นาทีแบบด่วน (~15 การ์ด)</button>
-              <button type="button" class="duration-pill active" data-count="25" id="len15Btn">🔥 15 นาทีแบบเข้มข้น (~25 การ์ด)</button>
-              <button type="button" class="duration-pill" data-count="40" id="lenIntenseBtn">🚀 ซ้อมมาราธอน (~40 การ์ด)</button>
+            <div class="duration-pills length-pills">
+              <button type="button" class="duration-pill length-pill" data-count="15" id="len10Btn">⚡ 10 นาทีแบบด่วน (~15 การ์ด)</button>
+              <button type="button" class="duration-pill length-pill active" data-count="25" id="len15Btn">🔥 15 นาทีแบบเข้มข้น (~25 การ์ด)</button>
+              <button type="button" class="duration-pill length-pill" data-count="40" id="lenIntenseBtn">🚀 ซ้อมมาราธอน (~40 การ์ด)</button>
             </div>
           </div>
 
@@ -154,24 +154,36 @@
               </div>
 
               <!-- Question Front -->
-              <div class="card-front">
-                <div id="hanziDisplay" class="hanzi-text">我们</div>
-                <div id="pinyinDisplay" class="pinyin-text hidden">wǒmen</div>
-                <button type="button" id="togglePinyinBtn" class="btn-pill-sm">
+              <div class="card-front front-content">
+                <div id="hanziDisplay" class="hanzi-display hanzi-text">我们</div>
+                <div id="pinyinDisplay" class="pinyin-display pinyin-text hidden">wǒmen</div>
+                <button type="button" id="togglePinyinBtn" class="btn-pill-sm pinyin-toggle-btn">
                   👁️ <span id="pinyinBtnText">ดูพินอิน (Pinyin)</span>
                 </button>
 
-                <!-- For Sentences: Fill-in Blank prompt (NO spoilers on front) -->
+                <!-- For Sentences: Fill-in Blank prompt with Hint (NO spoilers on front) -->
                 <div id="clozePromptBox" class="cloze-box hidden">
                   <div class="cloze-context-tag" id="clozeContextTag">💬 บริบท: การสนทนาในชีวิตประจำวัน</div>
+                  
+                  <!-- Click-to-reveal Hint -->
+                  <div class="cloze-hint-row">
+                    <button type="button" id="toggleClozeHintBtn" class="btn-hint-toggle">
+                      💡 <span id="lblClozeHintBtn">แตะเพื่อดูคำใบ้ (Hint)</span>
+                    </button>
+                    <div id="clozeHintTextWrap" class="cloze-hint-text-wrap hidden">
+                      <span class="hint-prefix">คำใบ้:</span>
+                      <strong id="clozeHintMeaning" class="hint-meaning"></strong>
+                    </div>
+                  </div>
+
                   <p class="cloze-instruction-text" id="clozeInstructionText">🎯 นึกคำศัพท์หรือไวยากรณ์ที่หายไปในช่องว่าง</p>
                 </div>
 
-                <div class="tap-hint" id="tapHintText">แตะที่การ์ดเพื่อดูคำแปลไทยและประโยคตัวอย่าง</div>
+                <div class="tap-hint card-tap-hint" id="tapHintText">แตะที่การ์ดเพื่อดูคำแปลไทยและประโยคตัวอย่าง</div>
               </div>
 
               <!-- Answer Back (Revealed upon tap) -->
-              <div id="cardBack" class="card-back hidden">
+              <div id="cardBack" class="card-back back-content hidden">
                 <hr class="card-divider">
 
                 <!-- 1. WORD ANSWER SECTION (Shown for words) -->
@@ -285,21 +297,21 @@
 
             <!-- SRS Rating Grading Buttons (After reveal) -->
             <div id="srsRatingArea" class="srs-rating-grid hidden">
-              <button class="srs-btn srs-again" data-grade="1">
+              <button class="srs-btn btn-srs srs-again btn-again" data-grade="1">
                 <span class="srs-label" id="srsAgainTxt">ทบทวนอีก</span>
-                <span class="srs-time" id="srsAgainSubTxt">วนกลับมา</span>
+                <span class="srs-time srs-sub" id="srsAgainSubTxt">วนกลับมา</span>
               </button>
-              <button class="srs-btn srs-hard" data-grade="2">
+              <button class="srs-btn btn-srs srs-hard btn-hard" data-grade="2">
                 <span class="srs-label" id="srsHardTxt">ยาก</span>
-                <span class="srs-time">1 วัน</span>
+                <span class="srs-time srs-sub">1 วัน</span>
               </button>
-              <button class="srs-btn srs-good" data-grade="3">
+              <button class="srs-btn btn-srs srs-good btn-good" data-grade="3">
                 <span class="srs-label" id="srsGoodTxt">พอได้</span>
-                <span class="srs-time">3 วัน</span>
+                <span class="srs-time srs-sub">3 วัน</span>
               </button>
-              <button class="srs-btn srs-easy" data-grade="4">
+              <button class="srs-btn btn-srs srs-easy btn-easy" data-grade="4">
                 <span class="srs-label" id="srsEasyTxt">ง่ายมาก</span>
-                <span class="srs-time">6 วัน</span>
+                <span class="srs-time srs-sub">6 วัน</span>
               </button>
             </div>
           </div>
