@@ -125,8 +125,8 @@ def api_session():
                     "th": r["ex_th"]
                 }]
 
-            # Pick a default or random variation for initial display
-            cur_ex = random.choice(examples) if examples else {
+            # Use primary textbook example for consistent initial display
+            cur_ex = examples[0] if examples else {
                 "cn": r["ex_cn"] or "",
                 "py": r["ex_py"] or "",
                 "en": r["ex_en"] or "",
@@ -181,6 +181,7 @@ def api_session():
                 "cloze_target": r["cloze_target"],
                 "cloze_hint_en": r["cloze_hint_en"],
                 "cloze_hint_th": r["cloze_hint_th"],
+                "distractors": json.loads(r["distractors_json"]) if ("distractors_json" in r.keys() and r["distractors_json"]) else [],
                 "grammar_en": r["grammar_en"],
                 "grammar_th": r["grammar_th"],
                 "repetitions": r["repetitions"],

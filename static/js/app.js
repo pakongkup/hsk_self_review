@@ -43,8 +43,9 @@
       hideHint: '🙈 ซ่อนคำใบ้',
       hintPrefix: 'คำใบ้:',
       tapHintWord: 'แตะที่การ์ดเพื่อดูคำแปลไทยและประโยคตัวอย่าง',
-      tapHintSent: 'แตะที่การ์ดเพื่อตรวจคำตอบ (ดูเฉลยพินอินและคำแปล)',
+      tapHintSent: 'แตะเลือกคำตอบด้านบน หรือแตะการ์ดเพื่อดูเฉลย',
       clozeInstruction: '🎯 นึกคำศัพท์หรือไวยากรณ์ที่หายไปในช่องว่าง',
+      clozeQuizPrompt: '🎯 เลือกคำตอบที่ถูกต้องเพื่อเติมในช่องว่าง:',
       clozeContextPrefix: '💬 บริบท:',
       missingLabel: 'คำที่หายไป:',
       exContextLabel: 'ตัวอย่างประโยค (Example)',
@@ -147,8 +148,9 @@
       hideHint: '🙈 Hide Hint',
       hintPrefix: 'Hint:',
       tapHintWord: 'Tap card to see definition & context',
-      tapHintSent: 'Tap card to check answer, pinyin & translation',
+      tapHintSent: 'Tap an option above or tap card to check answer',
       clozeInstruction: '🎯 Recall the missing word or grammar structure',
+      clozeQuizPrompt: '🎯 Choose the correct answer to fill in the blank:',
       clozeContextPrefix: '💬 Context:',
       missingLabel: 'Missing Target:',
       exContextLabel: 'Example Sentence (Context)',
@@ -232,6 +234,8 @@
     isClozePyRevealed: false,
     isClozeThRevealed: false,
     isClozeHintRevealed: false,
+    isClozeAnswered: false,
+    selectedChoice: null,
     sessionStartTime: null,
     sessionTimerInterval: null,
     sessionElapsedSeconds: 0,
@@ -316,7 +320,13 @@
     lblClozeHintBtn: document.getElementById('lblClozeHintBtn'),
     clozeHintTextWrap: document.getElementById('clozeHintTextWrap'),
     clozeHintMeaning: document.getElementById('clozeHintMeaning'),
+    clozeQuizSection: document.getElementById('clozeQuizSection'),
+    clozeQuizPrompt: document.getElementById('clozeQuizPrompt'),
+    clozeChoicesGrid: document.getElementById('clozeChoicesGrid'),
     wordAnswerBox: document.getElementById('wordAnswerBox'),
+    backHanziDisplay: document.getElementById('backHanziDisplay'),
+    backPinyinDisplay: document.getElementById('backPinyinDisplay'),
+    ttsWordBackBtn: document.getElementById('ttsWordBackBtn'),
     sentenceAnswerBox: document.getElementById('sentenceAnswerBox'),
     clozeTargetWord: document.getElementById('clozeTargetWord'),
     clozeTargetHint: document.getElementById('clozeTargetHint'),
@@ -881,6 +891,15 @@
         els.toggleClozeHintBtn.classList.remove('active');
         els.toggleClozeHintBtn.style.display = hintMeaning ? 'inline-flex' : 'none';
       }
+
+      // 4 Multiple Choice Options Setup (ฝึกเติมคำ 4 ตัวเลือก)
+      state.isClozeAnswered = false;
+      state.selectedChoice = null;
+      if (els.clozeQuizPrompt) {
+        els.clozeQuizPrompt.textContent = t.clozeQuizPrompt || '🎯 เลือกคำตอบที่ถูกต้องเพื่อเติมในช่องว่าง:';
+      }
+      renderClozeChoices(item);
+
       els.tapHintText.textContent = t.tapHintSent;
       els.ttsAudioBtn.style.opacity = '0.5';
     }
@@ -888,6 +907,8 @@
     // Word Back Content Setup
     if (isWord) {
       els.posBadge.textContent = item.pos || 'word';
+      if (els.backHanziDisplay) els.backHanziDisplay.textContent = item.hanzi;
+      if (els.backPinyinDisplay) els.backPinyinDisplay.textContent = item.pinyin;
       els.thaiDefinition.textContent = item.thai || '-';
       els.englishDefinition.textContent = item.english || '';
 
@@ -915,8 +936,8 @@
         const v = examples[0];
         els.exCn.textContent = v.cn || item.ex_cn || '';
         els.exPy.textContent = v.py || item.ex_py || '';
-        els.exTh.textContent = v.th || item.ex_th || '';
-        els.exEn.textContent = v.en || item.ex_en || '';
+        els.exTh.textContent = v.th || '';
+        els.exEn.textContent = v.en || '';
 
         if (els.exampleVariantIdx) els.exampleVariantIdx.textContent = `1/${examples.length}`;
         if (els.nextExampleBtn) els.nextExampleBtn.style.display = examples.length > 1 ? 'inline-flex' : 'none';
@@ -924,6 +945,104 @@
         document.getElementById('exampleBox').classList.add('hidden');
       }
     }
+  }
+
+  // 4 Multiple Choice Cloze Quiz Logic
+  function renderClozeChoices(item) {
+    if (!els.clozeChoicesGrid) return;
+    
+    // Prepare 4 choices: correct target + 3 distractors
+    const target = item.cloze_target;
+    let pool = Array.isArray(item.distractors) && item.distractors.length >= 3 ? [...item.distractors.slice(0, 3)] : [];
+    
+    // Fallback if distractors are fewer than 3
+    if (pool.length < 3) {
+      const fallbackList = ['哪儿', '以为', '除了', '终于', '根据', '越来越', '如果', '不但', '方便', '环境', '决定', '解决', '办法', '比较', '发现', '热情'];
+      for (const w of fallbackList) {
+        if (w !== target && !pool.includes(w)) {
+          pool.push(w);
+          if (pool.length >= 3) break;
+        }
+      }
+    }
+
+    const allChoices = [target, ...pool.slice(0, 3)];
+    // Shuffle choices
+    for (let i = allChoices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allChoices[i], allChoices[j]] = [allChoices[j], allChoices[i]];
+    }
+
+    const letters = ['A', 'B', 'C', 'D'];
+    els.clozeChoicesGrid.innerHTML = allChoices.map((choice, idx) => `
+      <button type="button" class="cloze-choice-btn" data-choice="${choice}">
+        <span class="choice-letter">${letters[idx]}</span>
+        <span class="choice-text">${choice}</span>
+      </button>
+    `).join('');
+
+    // Bind choice click handlers
+    els.clozeChoicesGrid.querySelectorAll('.cloze-choice-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleChoiceSelect(btn.dataset.choice, btn);
+      });
+    });
+  }
+
+  function handleChoiceSelect(selectedWord, clickedBtn) {
+    if (state.isClozeAnswered) return;
+    state.isClozeAnswered = true;
+    state.selectedChoice = selectedWord;
+
+    const item = state.sessionDeck[state.currentIndex];
+    const isCorrect = (selectedWord === item.cloze_target);
+
+    // Disable all choice buttons to prevent further clicks
+    els.clozeChoicesGrid.querySelectorAll('.cloze-choice-btn').forEach(btn => {
+      btn.classList.add('disabled');
+    });
+
+    if (isCorrect) {
+      clickedBtn.classList.add('correct');
+      const letterSpan = clickedBtn.querySelector('.choice-letter');
+      if (letterSpan) letterSpan.textContent = '✓';
+    } else {
+      clickedBtn.classList.add('incorrect');
+      const letterSpan = clickedBtn.querySelector('.choice-letter');
+      if (letterSpan) letterSpan.textContent = '✗';
+
+      // Highlight the correct answer
+      els.clozeChoicesGrid.querySelectorAll('.cloze-choice-btn').forEach(btn => {
+        if (btn.dataset.choice === item.cloze_target) {
+          btn.classList.add('correct');
+          const lSpan = btn.querySelector('.choice-letter');
+          if (lSpan) lSpan.textContent = '✓';
+        }
+      });
+    }
+
+    // Fill in the sentence blank with the target in green
+    if (item.cloze_target && item.hanzi.includes(item.cloze_target)) {
+      els.hanziDisplay.innerHTML = item.hanzi.replace(
+        item.cloze_target,
+        `<span class="cloze-correct-fill">${item.cloze_target}</span>`
+      );
+    }
+
+    // Automatically reveal answer
+    revealAnswer();
+
+    // Auto-focus recommended SRS button
+    setTimeout(() => {
+      if (isCorrect) {
+        const goodBtn = document.querySelector('.srs-btn[data-grade="3"], .srs-good');
+        if (goodBtn) goodBtn.focus();
+      } else {
+        const againBtn = document.querySelector('.srs-btn[data-grade="1"], .srs-again');
+        if (againBtn) againBtn.focus();
+      }
+    }, 150);
   }
 
   function toggleExamplePinyin(e) {
@@ -1421,8 +1540,11 @@
     // Card Reveal on Tap
     els.flashcard.addEventListener('click', (e) => {
       if (e.target.closest('#ttsAudioBtn') || 
+          e.target.closest('#ttsWordBackBtn') ||
           e.target.closest('#togglePinyinBtn') ||
           e.target.closest('#toggleClozeHintBtn') ||
+          e.target.closest('#clozeChoicesGrid') ||
+          e.target.closest('.cloze-choice-btn') ||
           e.target.closest('#exampleBox') ||
           e.target.closest('#sentenceAnswerBox') ||
           e.target.closest('.reveal-box') ||
@@ -1433,6 +1555,15 @@
     els.showAnswerBtn.addEventListener('click', () => {
       revealAnswer();
     });
+
+    // Audio TTS Button for Word Back (on reveal)
+    if (els.ttsWordBackBtn) {
+      els.ttsWordBackBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const item = state.sessionDeck[state.currentIndex];
+        if (item && item.hanzi) speakChinese(item.hanzi);
+      });
+    }
 
     // Audio TTS Button (Word front & General TTS)
     els.ttsAudioBtn.addEventListener('click', (e) => {

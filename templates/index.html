@@ -161,7 +161,7 @@
                   👁️ <span id="pinyinBtnText">ดูพินอิน (Pinyin)</span>
                 </button>
 
-                <!-- For Sentences: Fill-in Blank prompt with Hint (NO spoilers on front) -->
+                <!-- For Sentences: Fill-in Blank prompt with Hint & 4 Multiple-Choice Options -->
                 <div id="clozePromptBox" class="cloze-box hidden">
                   <div class="cloze-context-tag" id="clozeContextTag">💬 บริบท: การสนทนาในชีวิตประจำวัน</div>
                   
@@ -176,7 +176,13 @@
                     </div>
                   </div>
 
-                  <p class="cloze-instruction-text" id="clozeInstructionText">🎯 นึกคำศัพท์หรือไวยากรณ์ที่หายไปในช่องว่าง</p>
+                  <!-- 4 Multiple Choice Options (4 ตัวเลือก) -->
+                  <div class="cloze-quiz-section" id="clozeQuizSection">
+                    <div class="cloze-quiz-prompt" id="clozeQuizPrompt">🎯 เลือกคำตอบที่ถูกต้องเพื่อเติมในช่องว่าง:</div>
+                    <div class="cloze-choices-grid" id="clozeChoicesGrid">
+                      <!-- Choice buttons A, B, C, D will be dynamically generated -->
+                    </div>
+                  </div>
                 </div>
 
                 <div class="tap-hint card-tap-hint" id="tapHintText">แตะที่การ์ดเพื่อดูคำแปลไทยและประโยคตัวอย่าง</div>
@@ -189,11 +195,21 @@
                 <!-- 1. WORD ANSWER SECTION (Shown for words) -->
                 <div id="wordAnswerBox">
                   <div class="definition-section">
-                    <div class="pos-badge" id="posBadge">pron.</div>
+                    <!-- Word Header on Reveal: Hanzi + Pinyin + Audio Replay -->
+                    <div class="back-word-header">
+                      <div class="back-word-main">
+                        <span class="back-hanzi-display" id="backHanziDisplay">我们</span>
+                        <span class="back-pinyin-display" id="backPinyinDisplay">wǒmen</span>
+                      </div>
+                      <div class="back-word-meta">
+                        <span class="pos-badge badge-pos" id="posBadge">pron.</span>
+                        <button type="button" id="ttsWordBackBtn" class="audio-mini-btn" title="ฟังเสียงอ่าน">🔊</button>
+                      </div>
+                    </div>
                     <!-- Primary Thai Translation -->
-                    <div class="primary-thai-definition" id="thaiDefinition">พวกเรา, เรา</div>
+                    <div class="primary-thai-definition back-thai" id="thaiDefinition">พวกเรา, เรา</div>
                     <!-- English Definition -->
-                    <div class="english-definition" id="englishDefinition">we, us</div>
+                    <div class="english-definition back-english" id="englishDefinition">we, us</div>
                   </div>
 
                   <!-- Example Sentence Context with Click-to-Reveal & 5 Variations -->

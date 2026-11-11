@@ -163,13 +163,16 @@ def generate_sentence_variants(word_obj):
     """
     hanzi = word_obj["hanzi"]
     pinyin = word_obj["pinyin"]
-    thai = word_obj["thai"]
-    english = word_obj["english"]
-    pos = word_obj.get("pos", "")
-    base_cn = word_obj.get("ex_cn", "")
-    base_py = word_obj.get("ex_py", "")
-    base_th = word_obj.get("ex_th", "")
-    base_en = word_obj.get("ex_en", "")
+    thai = word_obj.get("thai", "") or ""
+    english = word_obj.get("english", "") or ""
+    pos = word_obj.get("pos", "") or ""
+    base_cn = word_obj.get("ex_cn", "") or ""
+    base_py = word_obj.get("ex_py", "") or ""
+    base_th = word_obj.get("ex_th", "") or ""
+    base_en = word_obj.get("ex_en", "") or ""
+
+    thai_clean = thai.split(',')[0].split('/')[0].strip() if thai else hanzi
+    eng_clean = english.split(',')[0].split('/')[0].replace('to ', '').strip() if english else english
 
     variants = []
 
@@ -178,8 +181,8 @@ def generate_sentence_variants(word_obj):
         variants.append({
             "cn": base_cn,
             "py": base_py,
-            "th": base_th,
-            "en": base_en
+            "th": base_th or f"ประโยคตัวอย่างสำหรับ {thai_clean}",
+            "en": base_en or f"Example sentence for {eng_clean}."
         })
 
     # 2. Check if custom curated variations exist for this word
@@ -195,32 +198,32 @@ def generate_sentence_variants(word_obj):
             v_a = {
                 "cn": f"请问，这个{hanzi}在哪里可以买到？",
                 "py": f"Qǐngwèn, zhè ge {pinyin} zài nǎlǐ kěyǐ mǎi dào?",
-                "th": f"ขอถามหน่อย {thai} อันนี้สามารถหาซื้อได้ที่ไหนหรือครับ/ค่ะ?",
-                "en": f"Excuse me, where can I buy this {english}?"
+                "th": f"ขอถามหน่อย {thai_clean} อันนี้สามารถหาซื้อได้ที่ไหนหรือครับ/ค่ะ?",
+                "en": f"Excuse me, where can I buy this {eng_clean}?"
             }
             if v_a["cn"] != base_cn: variants.append(v_a)
         elif "v." in pos or "verb" in pos:
             v_a = {
                 "cn": f"你平时喜欢{hanzi}吗？",
                 "py": f"Nǐ píngshí xǐhuan {pinyin} ma?",
-                "th": f"ปกติแล้วเธอชอบ{thai}ไหม?",
-                "en": f"Do you usually like to {english}?"
+                "th": f"ปกติแล้วเธอชอบ{thai_clean}ไหม?",
+                "en": f"Do you usually like to {eng_clean}?"
             }
             if v_a["cn"] != base_cn: variants.append(v_a)
         elif "adj." in pos or "adjective" in pos:
             v_a = {
                 "cn": f"这里的环境真{hanzi}，我很喜欢。",
                 "py": f"Zhèlǐ de huánjìng zhēn {pinyin}, wǒ hěn xǐhuan.",
-                "th": f"สิ่งแวดล้อมที่นี่{thai}จริงๆ ฉันชอบมาก",
-                "en": f"The environment here is really {english}, I like it a lot."
+                "th": f"สิ่งแวดล้อมที่นี่{thai_clean}จริงๆ ฉันชอบมาก",
+                "en": f"The environment here is really {eng_clean}, I like it a lot."
             }
             if v_a["cn"] != base_cn: variants.append(v_a)
         elif "adv." in pos or "adverb" in pos:
             v_a = {
                 "cn": f"他{hanzi}在准备明天的汉语考试。",
                 "py": f"Tā {pinyin} zài zhǔnbèi míngtiān de Hànyǔ kǎoshì.",
-                "th": f"เขา{thai}เตรียมตัวสำหรับการสอบภาษาจีนในวันพรุ่งนี้",
-                "en": f"He is {english} preparing for tomorrow's Chinese exam."
+                "th": f"เขา{thai_clean}เตรียมตัวสำหรับการสอบภาษาจีนในวันพรุ่งนี้",
+                "en": f"He is {eng_clean} preparing for tomorrow's Chinese exam."
             }
             if v_a["cn"] != base_cn: variants.append(v_a)
 
@@ -230,32 +233,32 @@ def generate_sentence_variants(word_obj):
             v_b = {
                 "cn": f"桌子上放着一个新的{hanzi}。",
                 "py": f"Zhuōzi shang fàngzhe yí ge xīn de {pinyin}.",
-                "th": f"บนโต๊ะมี{thai}ใหม่อันหนึ่งวางอยู่",
-                "en": f"A new {english} is placed on the table."
+                "th": f"บนโต๊ะมี{thai_clean}ใหม่อันหนึ่งวางอยู่",
+                "en": f"A new {eng_clean} is placed on the table."
             }
             variants.append(v_b)
         elif "v." in pos:
             v_b = {
                 "cn": f"我们周末一起去{hanzi}吧！",
                 "py": f"Wǒmen zhōumò yìqǐ qù {pinyin} ba!",
-                "th": f"วันหยุดสุดสัปดาห์พวกเราไป{thai}ด้วยกันเถอะ!",
-                "en": f"Let's go {english} together this weekend!"
+                "th": f"วันหยุดสุดสัปดาห์พวกเราไป{thai_clean}ด้วยกันเถอะ!",
+                "en": f"Let's go {eng_clean} together this weekend!"
             }
             variants.append(v_b)
         elif "adj." in pos:
             v_b = {
                 "cn": f"虽然有点儿{hanzi}，但是值得尝试。",
                 "py": f"Suīrán yǒudiǎnr {pinyin}, dànshì zhíde chángshì.",
-                "th": f"ถึงแม้จะ{thai}ไปสักหน่อย แต่ก็คุ้มค่าที่จะลองดู",
-                "en": f"Although a bit {english}, it is worth trying."
+                "th": f"ถึงแม้จะ{thai_clean}ไปสักหน่อย แต่ก็คุ้มค่าที่จะลองดู",
+                "en": f"Although a bit {eng_clean}, it is worth trying."
             }
             variants.append(v_b)
         else:
             v_b = {
                 "cn": f"老师耐心地给我们讲解了这个{hanzi}的用法。",
                 "py": f"Lǎoshī nàixīn de gěi wǒmen jiǎngjiě le zhè ge {pinyin} de yòngfǎ.",
-                "th": f"คุณครูอธิบายวิธีใช้ {thai} ให้พวกเราฟังอย่างอดทน",
-                "en": f"The teacher patiently explained the usage of {english} to us."
+                "th": f"คุณครูอธิบายวิธีใช้คำว่า “{hanzi}” ({thai_clean}) ให้พวกเราฟังอย่างอดทน",
+                "en": f"The teacher patiently explained the usage of '{hanzi}' ({eng_clean}) to us."
             }
             variants.append(v_b)
 
@@ -265,16 +268,16 @@ def generate_sentence_variants(word_obj):
             v_c = {
                 "cn": f"做完作业以后，我才去{hanzi}。",
                 "py": f"Zuò wán zuòyè yǐhòu, wǒ cái qù {pinyin}.",
-                "th": f"หลังจากทำการบ้านเสร็จแล้ว ฉันถึงจะไป{thai}",
-                "en": f"Only after finishing homework will I go {english}."
+                "th": f"หลังจากทำการบ้านเสร็จแล้ว ฉันถึงจะไป{thai_clean}",
+                "en": f"Only after finishing homework will I go {eng_clean}."
             }
             variants.append(v_c)
         else:
             v_c = {
                 "cn": f"朋友告诉我，这个{hanzi}非常重要。",
                 "py": f"Péngyou gàosu wǒ, zhè ge {pinyin} fēicháng zhòngyào.",
-                "th": f"เพื่อนบอกฉันว่า {thai} นี้มีความสำคัญมาก",
-                "en": f"My friend told me this {english} is very important."
+                "th": f"เพื่อนบอกฉันว่า {thai_clean} นี้มีความสำคัญมาก",
+                "en": f"My friend told me this {eng_clean} is very important."
             }
             variants.append(v_c)
 
@@ -284,32 +287,32 @@ def generate_sentence_variants(word_obj):
             v_d = {
                 "cn": f"我昨天刚买了一个{hanzi}，质量非常好。",
                 "py": f"Wǒ zuótiān gāng mǎi le yí ge {pinyin}, zhìliàng fēicháng hǎo.",
-                "th": f"เมื่อวานฉันเพิ่งซื้อ{thai}มาอันหนึ่ง คุณภาพดีมาก",
-                "en": f"I just bought a {english} yesterday, the quality is very good."
+                "th": f"เมื่อวานฉันเพิ่งซื้อ{thai_clean}มาอันหนึ่ง คุณภาพดีมาก",
+                "en": f"I just bought a {eng_clean} yesterday, the quality is very good."
             }
             variants.append(v_d)
         elif "v." in pos:
             v_d = {
                 "cn": f"我已经学会怎么{hanzi}了，其实并不难。",
                 "py": f"Wǒ yǐjīng xuéhuì zěnme {pinyin} le, qíshí bìng bù nán.",
-                "th": f"ฉันเรียนรู้วิธี{thai}เป็นแล้ว ความจริงไม่ได้ยากเลย",
-                "en": f"I have learned how to {english}, it's actually not hard."
+                "th": f"ฉันเรียนรู้วิธี{thai_clean}เป็นแล้ว ความจริงไม่ได้ยากเลย",
+                "en": f"I have learned how to {eng_clean}, it's actually not hard."
             }
             variants.append(v_d)
         elif "adj." in pos:
             v_d = {
                 "cn": f"大家觉得今天的天气比昨天更{hanzi}。",
                 "py": f"Dàjiā juéde jīntiān de tiānqì bǐ zuótiān gèng {pinyin}.",
-                "th": f"ทุกคนรู้สึกว่าอากาศวันนี้{thai}กว่าเมื่อวาน",
-                "en": f"Everyone thinks today's weather is even more {english} than yesterday."
+                "th": f"ทุกคนรู้สึกว่าอากาศวันนี้{thai_clean}กว่าเมื่อวาน",
+                "en": f"Everyone thinks today's weather is even more {eng_clean} than yesterday."
             }
             variants.append(v_d)
         else:
             v_d = {
                 "cn": f"在日常生活中，我们经常会用到{hanzi}。",
                 "py": f"Zài rìcháng shēnghuó zhōng, wǒmen jīngcháng huì yòng dào {pinyin}.",
-                "th": f"ในชีวิตประจำวัน พวกเรามักจะได้ใช้ {thai} อยู่เสมอ",
-                "en": f"In daily life, we often use {english}."
+                "th": f"ในชีวิตประจำวัน พวกเรามักจะได้ใช้คำว่า “{hanzi}” ({thai_clean}) อยู่เสมอ",
+                "en": f"In daily life, we often use '{hanzi}' ({eng_clean})."
             }
             variants.append(v_d)
 
@@ -319,32 +322,32 @@ def generate_sentence_variants(word_obj):
             v_e = {
                 "cn": f"这个{hanzi}比我想象的还要实用很多。",
                 "py": f"Zhè ge {pinyin} bǐ wǒ xiǎngxiàng de hái yào shíyòng hěn duō.",
-                "th": f"{thai}นี้ใช้งานได้จริงมากกว่าที่ฉันคิดไว้เสียอีก",
-                "en": f"This {english} is much more practical than I imagined."
+                "th": f"{thai_clean}นี้ใช้งานได้จริงมากกว่าที่ฉันคิดไว้เสียอีก",
+                "en": f"This {eng_clean} is much more practical than I imagined."
             }
             variants.append(v_e)
         elif "v." in pos:
             v_e = {
                 "cn": f"如果明天有空，我们一起去{hanzi}怎么样？",
                 "py": f"Rúguǒ míngtiān yǒu kòng, wǒmen yìqǐ qù {pinyin} zěnmeyàng?",
-                "th": f"ถ้าพรุ่งนี้ว่าง พวกเราไป{thai}ด้วยกันดีไหม?",
-                "en": f"If you are free tomorrow, how about going to {english} together?"
+                "th": f"ถ้าพรุ่งนี้ว่าง พวกเราไป{thai_clean}ด้วยกันดีไหม?",
+                "en": f"If you are free tomorrow, how about going to {eng_clean} together?"
             }
             variants.append(v_e)
         elif "adj." in pos:
             v_e = {
                 "cn": f"如果觉得太{hanzi}，你可以先休息一下。",
                 "py": f"Rúguǒ juéde tài {pinyin}, nǐ kěyǐ xiān xiūxi yíxià.",
-                "th": f"ถ้าหากรู้สึก{thai}เกินไป เธอพักผ่อนสักครู่ก่อนก็ได้นะ",
-                "en": f"If it feels too {english}, you can take a rest first."
+                "th": f"ถ้าหากรู้สึก{thai_clean}เกินไป เธอพักผ่อนสักครู่ก่อนก็ได้นะ",
+                "en": f"If it feels too {eng_clean}, you can take a rest first."
             }
             variants.append(v_e)
         else:
             v_e = {
                 "cn": f"如果你能理解这个{hanzi}，请试着造一个句子。",
                 "py": f"Rúguǒ nǐ néng lǐjiě zhè ge {pinyin}, qǐng shìzhe zào yí ge jùzi.",
-                "th": f"ถ้าเธอเข้าใจ {thai} นี้แล้ว ลองแต่งประโยคดูสักหนึ่งประโยคนะ",
-                "en": f"If you understand {english}, please try making a sentence."
+                "th": f"ถ้าเธอเข้าใจคำว่า “{hanzi}” ({thai_clean}) แล้ว ลองแต่งประโยคดูสักหนึ่งประโยคนะ",
+                "en": f"If you understand '{hanzi}' ({eng_clean}), please try making a sentence."
             }
             variants.append(v_e)
 
